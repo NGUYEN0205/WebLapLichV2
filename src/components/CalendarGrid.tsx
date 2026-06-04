@@ -278,6 +278,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                             <span className="text-[10px] text-white opacity-90 font-medium">
                               {opt.className}
                             </span>
+                            {opt.isPinned && (
+                              <span className="text-[9px] text-amber-400 font-bold flex items-center gap-0.5 mt-0.5">
+                                🔒 Bắt buộc
+                              </span>
+                            )}
                             {opt.room && (
                               <span className="text-[9px] text-[#ccc3d8] flex items-center gap-0.5 mt-0.5">
                                 <MapPin className="w-2.5 h-2.5 shrink-0" />

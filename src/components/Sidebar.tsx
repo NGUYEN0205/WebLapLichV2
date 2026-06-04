@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  Calendar, BookOpen, Trash2, Plus, X, Sparkles, AlertCircle, RefreshCw, Layers
+  Calendar, BookOpen, Trash2, Plus, X, Sparkles, AlertCircle, RefreshCw, Layers, Pencil, Pin, PinOff
 } from "lucide-react";
 import { BusyActivity, Subject, ClassOption, UniversityPreset } from "../types";
 import { DEFAULT_PRESET, OTHER_PRESETS } from "../presets";
@@ -51,6 +51,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [newClassDuration, setNewClassDuration] = useState(3);
   const [newClassRoom, setNewClassRoom] = useState("");
   const [newClassTeacher, setNewClassTeacher] = useState("");
+
+  // Inline edit state for Class Options
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
+  const [editClassName, setEditClassName] = useState("");
+  const [editClassDay, setEditClassDay] = useState(2);
+  const [editClassStart, setEditClassStart] = useState(1);
+  const [editClassDuration, setEditClassDuration] = useState(3);
+  const [editClassRoom, setEditClassRoom] = useState("");
+  const [editClassTeacher, setEditClassTeacher] = useState("");
+
+  const handleStartEditClass = (cls: ClassOption) => {
+    setEditingClassId(cls.id);
+    setEditClassName(cls.className);
+    setEditClassDay(cls.day);
+    setEditClassStart(cls.startSlot);
+    setEditClassDuration(cls.duration);
+    setEditClassRoom(cls.room || "");
+    setEditClassTeacher(cls.teacher || "");
+  };
+
+  const handleTogglePinClass = (subjId: string, classOptId: string) => {
+    setSubjects((prev) =>
+      prev.map((s) => {
+        if (s.id === subjId) {
+          return {
+            ...s,
+            classes: s.classes.map((c) => {
+              if (c.id === classOptId) {
+                return { ...c, isPinned: !c.isPinned };
+              }
+              return c;
+            })
+          };
+        }
+        return s;
+      })
+    );
+  };
 
   // Handling adding fixed busy hours
   const handleAddBusy = (e: React.FormEvent) => {
@@ -169,6 +207,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return s;
       })
     );
+  };
+
+  const handleSaveEditClass = (subjId: string, classOptId: string) => {
+    if (!editClassName.trim()) {
+      alert("Vui lòng nhập tên lớp học phần!");
+      return;
+    }
+    if (editClassStart < 1 || editClassStart > 12 || editClassDuration < 1 || editClassStart + editClassDuration - 1 > 12) {
+      alert("Tiết học phải thuộc khoảng từ 1 đến 12!");
+      return;
+    }
+
+    setSubjects((prev) =>
+      prev.map((s) => {
+        if (s.id === subjId) {
+          return {
+            ...s,
+            classes: s.classes.map((c) => {
+              if (c.id === classOptId) {
+                return {
+                  ...c,
+                  className: editClassName.trim(),
+                  day: editClassDay,
+                  startSlot: editClassStart,
+                  duration: editClassDuration,
+                  room: editClassRoom.trim() || undefined,
+                  teacher: editClassTeacher.trim() || undefined,
+                };
+              }
+              return c;
+            })
+          };
+        }
+        return s;
+      })
+    );
+    setEditingClassId(null);
   };
 
   return (
@@ -388,27 +463,195 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     Chưa có lớp học phần nào.
                   </div>
                 ) : (
-                  subj.classes.map((cls) => (
-                    <div
-                      key={cls.id}
-                      className="bg-brand-surface-highest/40 p-1.5 rounded-lg border border-[#4a4455]/20 relative group/cls min-h-[44px]"
-                    >
-                      <span className="block text-[10px] font-bold text-[#e8dfee] line-clamp-1">{cls.className}</span>
-                      <span className="block text-[9px] text-brand-on-surface-variant">
-                        {cls.day === 8 ? "CN" : `T${cls.day}`} • Tiết {cls.startSlot}-{cls.startSlot + cls.duration - 1}
-                      </span>
-                      {cls.room && (
-                        <span className="block text-[8px] text-brand-primary opacity-80">{cls.room}</span>
-                      )}
-                      <button
-                        onClick={() => handleDeleteClass(subj.id, cls.id)}
-                        className="absolute top-1 right-1 text-brand-on-surface-variant hover:text-brand-error opacity-100 lg:opacity-0 lg:group-hover/cls:opacity-100 transition-all"
-                        title="Xóa lớp"
+                  subj.classes.map((cls) => {
+                    const isCurrentlyEditing = editingClassId === cls.id;
+                    if (isCurrentlyEditing) {
+                      return (
+                        <div
+                          key={cls.id}
+                          className="col-span-2 bg-brand-surface-high/85 p-3 rounded-lg border border-brand-primary/50 flex flex-col gap-2 shadow-inner z-10 text-left"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-brand-primary uppercase">Sửa lớp học phần</span>
+                            <button
+                              onClick={() => setEditingClassId(null)}
+                              className="text-brand-on-surface-variant hover:text-[#e8dfee]"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Mã/Tên Lớp</span>
+                              <input
+                                value={editClassName}
+                                onChange={(e) => setEditClassName(e.target.value)}
+                                placeholder="Ví dụ: Lớp 01"
+                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-xs rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                              />
+                            </div>
+                            
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase font-bold">Thứ</span>
+                              <select
+                                value={editClassDay}
+                                onChange={(e) => setEditClassDay(Number(e.target.value))}
+                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none"
+                              >
+                                <option value={2}>Thứ Hai</option>
+                                <option value={3}>Thứ Ba</option>
+                                <option value={4}>Thứ Tư</option>
+                                <option value={5}>Thứ Năm</option>
+                                <option value={6}>Thứ Sáu</option>
+                                <option value={7}>Thứ Bảy</option>
+                                <option value={8}>Chủ Nhật</option>
+                              </select>
+                            </div>
+
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase font-bold">Tiết Đầu</span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={12}
+                                value={editClassStart || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setEditClassStart(val === "" ? 0 : Number(val));
+                                }}
+                                onBlur={() => {
+                                  setEditClassStart(prev => Math.max(1, Math.min(12, prev || 1)));
+                                }}
+                                list="slots-1-12"
+                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase font-bold">Số Tiết</span>
+                              <input
+                                type="number"
+                                min={1}
+                                max={12}
+                                value={editClassDuration || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setEditClassDuration(val === "" ? 0 : Number(val));
+                                }}
+                                onBlur={() => {
+                                  setEditClassDuration(prev => Math.max(1, Math.min(12, prev || 1)));
+                                }}
+                                list="slots-1-12"
+                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-0.5 col-span-2">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Phòng / Giảng viên (Không bắt buộc)</span>
+                              <div className="grid grid-cols-2 gap-1">
+                                <input
+                                  value={editClassRoom}
+                                  onChange={(e) => setEditClassRoom(e.target.value)}
+                                  placeholder="Phòng A.201"
+                                  className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                />
+                                <input
+                                  value={editClassTeacher}
+                                  onChange={(e) => setEditClassTeacher(e.target.value)}
+                                  placeholder="Thầy Khánh"
+                                  className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 justify-end mt-1">
+                            <button
+                              onClick={() => setEditingClassId(null)}
+                              className="bg-brand-surface-highest px-3 py-1 text-[10px] font-bold rounded hover:bg-white/5 text-[#e8dfee] transition-all cursor-pointer"
+                            >
+                              Hủy
+                            </button>
+                            <button
+                              onClick={() => handleSaveEditClass(subj.id, cls.id)}
+                              className="bg-brand-primary text-brand-on-primary px-3 py-1 text-[10px] font-bold rounded hover:brightness-105 transition-all text-white cursor-pointer"
+                            >
+                              Lưu thay đổi
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={cls.id}
+                        className={`bg-brand-surface-highest/40 p-2 rounded-lg border relative group/cls min-h-[64px] flex flex-col justify-between transition-all text-left ${
+                          cls.isPinned ? "border-amber-400 bg-amber-400-[0.1]" : "border-[#4a4455]/20 hover:bg-white/5"
+                        }`}
+                        style={cls.isPinned ? { borderColor: "#ffb95f", backgroundColor: "rgba(255, 185, 95, 0.05)" } : undefined}
                       >
-                        <X className="w-2.5 h-2.5" />
-                      </button>
-                    </div>
-                  ))
+                        <div>
+                          <div className="flex items-center gap-1.5 justify-between">
+                            <span className="block text-[10px] font-bold text-[#e8dfee] line-clamp-1 pr-8">
+                              {cls.className}
+                            </span>
+                            {cls.isPinned && (
+                              <span className="shrink-0 text-[8px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1 rounded flex items-center gap-0.5">
+                                <Pin className="w-2 h-2 text-amber-400" fill="currentColor" />
+                                Pin
+                              </span>
+                            )}
+                          </div>
+                          
+                          <span className="block text-[9px] text-brand-on-surface-variant mt-0.5 font-medium leading-tight">
+                            {cls.day === 8 ? "CN" : `T${cls.day}`} • Tiết {cls.startSlot}-{cls.startSlot + cls.duration - 1}
+                          </span>
+                          
+                          {cls.room && (
+                            <span className="block text-[8px] text-brand-primary opacity-85 mt-0.5 leading-none">
+                              P: {cls.room}
+                            </span>
+                          )}
+                          {cls.teacher && (
+                            <span className="block text-[8px] text-brand-secondary opacity-85 mt-0.5 leading-none">
+                              GV: {cls.teacher}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* HOVER TOOLBAR ACTIONS */}
+                        <div className="absolute top-1 right-1 flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover/cls:opacity-100 transition-all bg-brand-surface-highest border border-[#4a4455]/20 p-0.5 rounded shadow-lg z-15">
+                          <button
+                            onClick={() => handleTogglePinClass(subj.id, cls.id)}
+                            className={`p-0.5 rounded hover:bg-white/10 transition duration-150 cursor-pointer ${
+                              cls.isPinned ? "text-amber-400" : "text-brand-on-surface-variant hover:text-amber-300"
+                            }`}
+                            title={cls.isPinned ? "Bỏ bắt buộc" : "Bắt buộc giữ lại"}
+                          >
+                            <Pin className="w-3.5 h-3.5" fill={cls.isPinned ? "currentColor" : "none"} />
+                          </button>
+
+                          <button
+                            onClick={() => handleStartEditClass(cls)}
+                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-primary hover:bg-white/10 transition duration-150 cursor-pointer"
+                            title="Sửa nhanh lớp"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteClass(subj.id, cls.id)}
+                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-error hover:bg-white/10 transition duration-150 cursor-pointer"
+                            title="Xóa lớp học phần"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 

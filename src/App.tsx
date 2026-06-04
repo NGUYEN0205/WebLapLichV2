@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { 
-  RefreshCw, Settings, User, Sliders, Calendar, BarChart2, Download, Check, Info, X
+  RefreshCw, Settings, User, Sliders, Calendar, BarChart2, Download, Check, Info, X, AlertCircle, Sun, Moon
 } from "lucide-react";
 import { Sidebar } from "./components/Sidebar";
 import { CalendarGrid } from "./components/CalendarGrid";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { ExportTab } from "./components/ExportTab";
 import { DEFAULT_PRESET } from "./presets";
-import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset } from "./types";
+import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset, PinConflictWarning } from "./types";
 
 export default function App() {
   // Application Data States
@@ -32,6 +32,25 @@ export default function App() {
   // Settings Modal State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  // Theme Toggle State
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    const saved = localStorage.getItem("studygrid_theme");
+    return saved === "light" ? "light" : "dark";
+  });
+
+  // Sync theme class and attribute onto document.documentElement
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "light") {
+      root.classList.add("light");
+      root.setAttribute("data-theme", "light");
+    } else {
+      root.classList.remove("light");
+      root.removeAttribute("data-theme");
+    }
+    localStorage.setItem("studygrid_theme", theme);
+  }, [theme]);
+
   // Persist local state edits instantly
   useEffect(() => {
     localStorage.setItem("studygrid_busy", JSON.stringify(busyActivities));
@@ -40,6 +59,20 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("studygrid_subjects", JSON.stringify(subjects));
   }, [subjects]);
+
+  // Overlap checker utility
+  // Evaluates two slots starting at S1 and S2 covering D1 and D2 durations of the same Day
+  const checkOverlap = (
+    day1: number,
+    start1: number,
+    dur1: number,
+    day2: number,
+    start2: number,
+    dur2: number
+  ): boolean => {
+    if (day1 !== day2) return false;
+    return start1 < start2 + dur2 && start2 < start1 + dur1;
+  };
 
   // Backtracking Timetable Solver Engine
   const solveTimetable = () => {
@@ -54,20 +87,6 @@ export default function App() {
 
     const tempSolutions: TimetableSolution[] = [];
 
-    // Overlap checker utility
-    // Evaluates two slots starting at S1 and S2 covering D1 and D2 durations of the same Day
-    const checkOverlap = (
-      day1: number,
-      start1: number,
-      dur1: number,
-      day2: number,
-      start2: number,
-      dur2: number
-    ): boolean => {
-      if (day1 !== day2) return false;
-      return start1 < start2 + dur2 && start2 < start1 + dur1;
-    };
-
     // Recursive search DFS finder
     const dfsSearch = (subjectIndex: number, currentClasses: any[]) => {
       // Base case: we picked a class option for every active subject successfully
@@ -78,8 +97,13 @@ export default function App() {
 
       const subj = activeSubjects[subjectIndex];
 
-      // Outer loop through all class choices of current subject
-      for (const cls of subj.classes) {
+      // ── FEATURE B: Pin constraint ──
+      // If any class option is pinned, only try that pinned option(s) for this subject
+      const pinnedClasses = subj.classes.filter((c) => c.isPinned);
+      const choices = pinnedClasses.length > 0 ? pinnedClasses : subj.classes;
+
+      // Outer loop through all class choices of current subject (pinned options if any, else all options)
+      for (const cls of choices) {
         let isConflicting = false;
 
         // 1. Check conflicts with previous chosen classes in this path
@@ -102,6 +126,7 @@ export default function App() {
         if (isConflicting) continue; // Prune branch
 
         // 2. Check conflicts with fixed busy activities
+        let conflictsWithBusy = false;
         for (const busy of busyActivities) {
           if (
             checkOverlap(
@@ -113,9 +138,15 @@ export default function App() {
               busy.duration
             )
           ) {
-            isConflicting = true;
+            conflictsWithBusy = true;
             break;
           }
+        }
+
+        // If it conflicts with busy activities and it is NOT pinned, we prune.
+        // If it IS pinned, we proceed (warning will be shown in UI).
+        if (conflictsWithBusy && !cls.isPinned) {
+          isConflicting = true;
         }
 
         if (isConflicting) continue; // Prune branch
@@ -168,8 +199,38 @@ export default function App() {
     alert("Bộ lọc đã được tính toán lại thành công!");
   };
 
+  // Derive pin warnings for the currently selected active solution
+  const activeSolution = solutions[currentSolutionIndex] || null;
+  const pinWarnings: PinConflictWarning[] = [];
+  
+  const getDayLabel = (d: number) => {
+    if (d === 8) return "Chủ Nhật";
+    return `Thứ ${d}`;
+  };
+
+  if (activeSolution) {
+    activeSolution.classes.forEach((clsItem) => {
+      const cls = clsItem.classOption;
+      if (cls.isPinned) {
+        const hasBusyConflict = busyActivities.some((busy) =>
+          checkOverlap(cls.day, cls.startSlot, cls.duration, busy.day, busy.startSlot, busy.duration)
+        );
+        if (hasBusyConflict) {
+          pinWarnings.push({
+            sectionId: cls.id,
+            courseName: clsItem.subjectName,
+            day: cls.day,
+            startPeriod: cls.startSlot,
+            endPeriod: cls.startSlot + cls.duration - 1,
+            detail: `Lớp bắt buộc "${cls.className}" của môn "${clsItem.subjectName}" trùng với lịch bận của bạn (${getDayLabel(cls.day)}: Tiết ${cls.startSlot}-${cls.startSlot + cls.duration - 1})`
+          });
+        }
+      }
+    });
+  }
+
   return (
-    <div className="bg-brand-bg text-[#e8dfee] font-sans overflow-hidden h-screen flex flex-col relative select-none">
+    <div className="bg-brand-bg text-brand-text font-sans overflow-hidden h-screen flex flex-col relative select-none">
       
       {/* TOP HEADER NAVIGATION BAR */}
       <header className="bg-brand-bg/60 backdrop-blur-xl border-b border-[#4a4455]/15 flex justify-between items-center px-6 w-full h-16 shrink-0 z-40 select-none">
@@ -218,6 +279,13 @@ export default function App() {
         {/* CONTROLS */}
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setTheme(prev => prev === "light" ? "dark" : "light")}
+            className="p-2 text-brand-on-surface-variant hover:text-brand-primary transition rounded-lg hover:bg-white/5 cursor-pointer active:scale-95"
+            title={theme === "light" ? "Chuyển sang giao diện tối" : "Chuyển sang giao diện sáng"}
+          >
+            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          <button
             onClick={() => {
               solveTimetable();
               setSelectedTab("Timetable");
@@ -255,6 +323,22 @@ export default function App() {
 
         {/* WORKSPACE AREA */}
         <section className="flex-1 flex flex-col overflow-hidden">
+          {selectedTab === "Timetable" && pinWarnings.length > 0 && (
+            <div className="mx-6 mt-6 p-4 bg-red-950/45 border border-red-500/40 rounded-2xl space-y-1 shrink-0 shadow-lg relative z-20">
+              <p className="text-xs md:text-sm font-bold text-red-400 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400" />
+                ⚠️ Cảnh báo lớp học bắt buộc bị trùng giờ với lịch bận cá nhân:
+              </p>
+              <div className="pl-6 flex flex-col gap-0.5">
+                {pinWarnings.map((w) => (
+                  <p key={w.sectionId} className="text-xs text-red-300">
+                    • {w.detail}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
           {selectedTab === "Timetable" && (
             <CalendarGrid
               solutions={solutions}

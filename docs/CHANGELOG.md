@@ -4,6 +4,21 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 
 ---
 
+## [1.1.0] - 2026-06-04
+### Đã thêm/Cải tiến (Added/Improved)
+- **Nút chuyển đổi giao diện Sáng / Tối (Theme Toggle):**
+  - Tích hợp nút chuyển đổi giao diện linh hoạt giữa chế độ sáng (Light Mode - tone nền sữa dừa thanh nhã, độ tương phản hoàn hảo) và chế độ tối (Dark Mode - Cosmic Slate đặc trưng cực dịu mắt khi sử dụng ban đêm).
+  - Sử dụng biến CSS động cấp độ gốc (`:root`) kết hợp cơ chế `@theme` của Tailwind CSS v4 giúp quá trình chuyển đổi giao diện phản hồi mượt mà trong chớp mắt mà không bị giật rè hay giảm hiệu năng.
+  - Tự động ghi nhớ và lưu trữ lựa chọn giao diện cá nhân của người dùng vào `localStorage` phục vụ cho các lần truy cập tiếp theo.
+- **Sửa nhanh lớp học phần:** Cho phép sửa đổi hoặc xóa mọi thuộc tính (tên lớp, thứ, tiết đầu, số tiết, phòng học, giảng viên) trực tiếp ngay trên danh sách và phản hồi đồng bộ tức thì trên thời khóa biểu.
+- **Đánh dấu môn bắt buộc (Pin/Must-Include):**
+  - Thêm tính năng 📌 Pin học phần để đánh dấu một lớp học là khẩn cấp hoặc ưu tiên bắt buộc học.
+  - Thuật toán giải Solver tự động giữ lại lớp được "Pin", tối ưu hóa xung quanh lớp đó và bỏ qua các biến thể khác của môn.
+  - Hiển thị nhãn cảnh báo nếu xảy ra xung đột không thể tránh khỏi giữa lớp bắt buộc và thời gian bận rộn cá nhân.
+  - Tích hợp biểu tượng badge `🔒 Bắt buộc` nổi bật trên giao diện lưới Lịch biểu để dễ dàng quan sát trực giác.
+
+---
+
 ## [1.0.3] - 2026-06-04
 ### Đã thêm/Sửa đổi (Added/Improved)
 - **Khu vực hiển thị danh sách bận cá nhân mới:** Di chuyển danh sách các lịch bận đã thêm lên vị trí trực quan nằm ngay bên dưới nút "Thêm lịch bận cá nhân" thuộc Form nhập liệu.
@@ -20,7 +35,7 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 
 ---
 
-## [1.0.1] - 2026-06-04
+## [1.0.1] - 2026-06-03
 ### Khởi động Hệ thống (Initial System)
 - Khởi động dự án lập kế hoạch học tập sinh viên **StudyGrid Scheduler**.
 - Triển khai động cơ giải thuật toán Backtracking đệ quy tối ưu hóa lịch chồng chéo.

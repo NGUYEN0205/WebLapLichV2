@@ -1,38 +1,87 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+:root {
+  --brand-bg: #15121b;
+  --brand-surface: #1d1a24;
+  --brand-surface-medium: #221e28;
+  --brand-surface-high: #2c2833;
+  --brand-surface-highest: #37333e;
+  --brand-primary: #d2bbff;
+  --brand-primary-container: #7c3aed;
+  --brand-on-primary-container: #ede0ff;
+  --brand-secondary: #4edea3;
+  --brand-secondary-container: #00a572;
+  --brand-on-secondary: #003824;
+  --brand-tertiary: #ffb95f;
+  --brand-error: #ffb4ab;
+  --brand-error-container: #93000a;
+  --brand-text: #e8dfee;
+  --brand-text-muted: #a5a0af;
+  --brand-border: rgba(255, 255, 255, 0.08);
+  --brand-glass: rgba(30, 26, 41, 0.6);
+  --brand-grid-lines: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="light"], :root.light {
+  --brand-bg: #f5f3f7;
+  --brand-surface: #ffffff;
+  --brand-surface-medium: #eae6f0;
+  --brand-surface-high: #dfdae8;
+  --brand-surface-highest: #cfc6dc;
+  --brand-primary: #6c3cf7;
+  --brand-primary-container: #eae4fd;
+  --brand-on-primary-container: #331070;
+  --brand-secondary: #0f9f72;
+  --brand-secondary-container: #e6fcf5;
+  --brand-on-secondary: #064e3b;
+  --brand-tertiary: #df7820;
+  --brand-error: #d92d4b;
+  --brand-error-container: #ffe4e6;
+  --brand-text: #1d1526;
+  --brand-text-muted: #645a72;
+  --brand-border: rgba(0, 0, 0, 0.08);
+  --brand-glass: rgba(255, 255, 255, 0.7);
+  --brand-grid-lines: rgba(0, 0, 0, 0.05);
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  /* StudyGrid theme colors matching screenshot specifications */
-  --color-brand-bg: #15121b;
-  --color-brand-surface: #1d1a24;
-  --color-brand-surface-medium: #221e28;
-  --color-brand-surface-high: #2c2833;
-  --color-brand-surface-highest: #37333e;
-  --color-brand-primary: #d2bbff;
-  --color-brand-primary-container: #7c3aed;
-  --color-brand-on-primary-container: #ede0ff;
-  --color-brand-secondary: #4edea3;
-  --color-brand-secondary-container: #00a572;
-  --color-brand-on-secondary: #003824;
-  --color-brand-tertiary: #ffb95f;
-  --color-brand-error: #ffb4ab;
-  --color-brand-error-container: #93000a;
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-medium: var(--brand-surface-medium);
+  --color-brand-surface-high: var(--brand-surface-high);
+  --color-brand-surface-highest: var(--brand-surface-highest);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-container: var(--brand-primary-container);
+  --color-brand-on-primary-container: var(--brand-on-primary-container);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-container: var(--brand-secondary-container);
+  --color-brand-on-secondary: var(--brand-on-secondary);
+  --color-brand-tertiary: var(--brand-tertiary);
+  --color-brand-error: var(--brand-error);
+  --color-brand-error-container: var(--brand-error-container);
+  --color-brand-text: var(--brand-text);
+  --color-brand-text-muted: var(--brand-text-muted);
+  --color-brand-border: var(--brand-border);
+  --color-brand-grid-lines: var(--brand-grid-lines);
 }
 
 body {
-  background-color: var(--color-brand-bg);
-  color: #e8dfee;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
   font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Glass panel style from the design guidelines */
 .glass-panel {
-  background: rgba(30, 26, 41, 0.6);
+  background: var(--brand-glass);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--brand-border);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .calendar-grid {
@@ -49,9 +98,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #37333e;
+  background: var(--brand-surface-highest);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4455;
+  background: var(--brand-surface-high);
 }

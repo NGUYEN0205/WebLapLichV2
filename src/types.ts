@@ -14,6 +14,16 @@ export interface ClassOption {
   duration: number; // e.g. 2, 3, 4
   room?: string; // e.g. "Phòng A.201", "Lab 4"
   teacher?: string; // e.g. "Thầy Khánh", "Cô Hà"
+  isPinned?: boolean; // true if this class option is highlighted as a mandatory pin
+}
+
+export interface PinConflictWarning {
+  sectionId: string;
+  courseName: string;
+  day: number;
+  startPeriod: number;
+  endPeriod: number;
+  detail: string;
 }
 
 export interface Subject {
