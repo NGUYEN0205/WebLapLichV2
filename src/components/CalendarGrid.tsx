@@ -156,8 +156,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
       )}
 
-      {/* WEEKLY TIMETABLE CONTAINER */}
-      <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl flex-1 flex flex-col min-w-[760px]">
+      {/* WEEKLY TIMETABLE CONTAINER WRAPPER FOR HORIZONTAL FLOW */}
+      <div className="w-full overflow-x-auto rounded-3xl shrink-0">
+        {/* WEEKLY TIMETABLE CONTAINER */}
+        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl flex flex-col min-w-[760px]">
         
         {/* DAYS HEADER CHIPS */}
         <div className="calendar-grid bg-brand-surface-highest/50 border-b border-[#4a4455]/20 shrink-0">
@@ -175,10 +177,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
 
         {/* TIMETABLE CONTENT GRID BODY */}
-        <div className="relative flex-1" style={{ height: `${12 * slotHeight}px` }}>
+        <div className="relative w-full shrink-0" style={{ height: `${12 * slotHeight}px` }}>
           
           {/* BACKGROUND ROWS AND COLUMNS LINES */}
-          <div className="absolute inset-0 grid grid-cols-8 pointer-events-none">
+          <div className="absolute inset-0 calendar-grid pointer-events-none">
             {/* Label Column Grid boundaries */}
             <div className="border-r border-[#4a4455]/15 h-full"></div>
             
@@ -337,6 +339,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
 
         </div>
+      </div>
       </div>
 
       {/* FOOTER INTERACTIVE DETAILS DRAWER / POPOVER DECORATOR */}
