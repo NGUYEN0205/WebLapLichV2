@@ -174,36 +174,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-full lg:w-[380px] bg-brand-surface/60 backdrop-blur-xl border-r border-[#4a4455]/30 shadow-2xl flex flex-col p-4 gap-6 overflow-y-auto pb-24 h-full shrink-0">
       
-      {/* PRESETS LOADER */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-brand-on-primary-container tracking-wider uppercase flex items-center gap-1.5 opacity-85">
-          <Layers className="w-3.5 h-3.5 text-brand-primary" />
-          Nạp dữ liệu mẫu nhanh
-        </label>
-        <div className="grid grid-cols-1 gap-1.5">
-          <button
-            onClick={() => loadPreset(DEFAULT_PRESET)}
-            className="text-left text-xs bg-brand-surface-high/70 hover:bg-brand-surface-highest transition p-2 rounded-lg border border-[#4a4455]/20 text-[#e8dfee] flex flex-col"
-          >
-            <span className="font-semibold text-brand-primary">Lịch mặc định (Theo Ảnh mẫu)</span>
-            <span className="text-[10px] text-brand-on-surface-variant opacity-80">Gốc: Toán cao cấp, Vật lý, Kỹ thuật lập trình</span>
-          </button>
-          
-          {OTHER_PRESETS.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => loadPreset(p)}
-              className="text-left text-xs bg-brand-surface-high/30 hover:bg-brand-surface-high transition p-2 rounded-lg border border-[#4a4455]/10 text-[#e8dfee]"
-            >
-              <span className="font-semibold">{p.name}</span>
-              <span className="block text-[10px] text-brand-on-surface-variant line-clamp-1">{p.description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <hr className="border-[#4a4455]/20" />
-
       {/* LỊCH CÁ NHÂN CỐ ĐỊNH */}
       <div className="flex flex-col gap-1.5">
         <h2 className="text-lg font-bold text-[#e8dfee] flex items-center gap-2">
@@ -215,101 +185,121 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </p>
       </div>
 
-      {/* Form bận */}
-      <form onSubmit={handleAddBusy} className="bg-brand-surface-low/80 p-3 rounded-xl border border-[#4a4455]/20 flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-wider">
-            Tên hoạt động bận
-          </label>
-          <input
-            value={busyName}
-            onChange={(e) => setBusyName(e.target.value)}
-            className="bg-brand-surface-high/70 border border-[#4a4455]/40 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-[#e8dfee]"
-            placeholder="Ví dụ: Đi làm thêm, Học Anh văn..."
-            type="text"
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
+      {/* Form bận & Danh sách kèm theo */}
+      <div className="bg-brand-surface-low/80 p-3 rounded-xl border border-[#4a4455]/20 flex flex-col gap-3">
+        <form onSubmit={handleAddBusy} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Thứ</label>
-            <select
-              value={busyDay}
-              onChange={(e) => setBusyDay(Number(e.target.value))}
-              className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
-            >
-              <option value={2}>Thứ Hai</option>
-              <option value={3}>Thứ Ba</option>
-              <option value={4}>Thứ Tư</option>
-              <option value={5}>Thứ Năm</option>
-              <option value={6}>Thứ Sáu</option>
-              <option value={7}>Thứ Bảy</option>
-              <option value={8}>Chủ Nhật</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Tiết đầu</label>
+            <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-wider">
+              Tên hoạt động bận
+            </label>
             <input
-              value={busyStart}
-              onChange={(e) => setBusyStart(Math.max(1, Math.min(12, Number(e.target.value))))}
-              className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
-              type="number"
-              min={1}
-              max={12}
+              value={busyName}
+              onChange={(e) => setBusyName(e.target.value)}
+              className="bg-brand-surface-high/70 border border-[#4a4455]/40 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-[#e8dfee]"
+              placeholder="Ví dụ: Đi làm thêm, Học Anh văn..."
+              type="text"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Số tiết</label>
-            <input
-              value={busyDuration}
-              onChange={(e) => setBusyDuration(Math.max(1, Math.min(12, Number(e.target.value))))}
-              className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
-              type="number"
-              min={1}
-              max={12}
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-brand-primary-container hover:bg-brand-primary-container/85 text-brand-on-primary-container py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Thêm lịch bận cá nhân
-        </button>
-      </form>
-
-      {/* Danh sách bận */}
-      <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1">
-        {busyActivities.length === 0 ? (
-          <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-2 border border-dashed border-[#4a4455]/20 rounded-xl">
-            Chưa có lịch bận cố định nào
-          </p>
-        ) : (
-          busyActivities.map((act) => (
-            <div
-              key={act.id}
-              className="glass-panel p-2.5 rounded-lg flex justify-between items-center group hover:bg-white/5 transition-all"
-            >
-              <div className="flex flex-col">
-                <span className="font-bold text-xs text-[#e8dfee]">{act.name}</span>
-                <span className="text-[10px] text-brand-on-surface-variant">
-                  {act.day === 8 ? "Chủ Nhật" : `Thứ ${act.day}`} • Tiết {act.startSlot}-{act.startSlot + act.duration - 1}
-                </span>
-              </div>
-              <button
-                onClick={() => handleDeleteBusy(act.id)}
-                className="text-brand-on-surface-variant hover:text-brand-error opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all p-1"
-                title="Xóa lịch bận"
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Thứ</label>
+              <select
+                value={busyDay}
+                onChange={(e) => setBusyDay(Number(e.target.value))}
+                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
               >
-                <X className="w-3.5 h-3.5" />
-              </button>
+                <option value={2}>Thứ Hai</option>
+                <option value={3}>Thứ Ba</option>
+                <option value={4}>Thứ Tư</option>
+                <option value={5}>Thứ Năm</option>
+                <option value={6}>Thứ Sáu</option>
+                <option value={7}>Thứ Bảy</option>
+                <option value={8}>Chủ Nhật</option>
+              </select>
             </div>
-          ))
-        )}
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Tiết đầu</label>
+              <input
+                value={busyStart || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBusyStart(val === "" ? 0 : Number(val));
+                }}
+                onBlur={() => {
+                  setBusyStart(prev => Math.max(1, Math.min(12, prev || 1)));
+                }}
+                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
+                type="number"
+                min={1}
+                max={12}
+                list="slots-1-12"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase">Số tiết</label>
+              <input
+                value={busyDuration || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBusyDuration(val === "" ? 0 : Number(val));
+                }}
+                onBlur={() => {
+                  setBusyDuration(prev => Math.max(1, Math.min(12, prev || 1)));
+                }}
+                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
+                type="number"
+                min={1}
+                max={12}
+                list="slots-1-12"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-brand-primary-container hover:bg-brand-primary-container/85 text-brand-on-primary-container py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm lịch bận cá nhân
+          </button>
+        </form>
+
+        {/* Danh sách bận nằm ngay dưới nút thêm */}
+        <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1 border-t border-[#4a4455]/20 pt-3 mt-1">
+          <span className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-wider block">
+            Lịch bận đã thêm ({busyActivities.length}):
+          </span>
+          {busyActivities.length === 0 ? (
+            <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-2 border border-dashed border-[#4a4455]/20 rounded-xl">
+              Chưa có lịch bận cố định nào
+            </p>
+          ) : (
+            busyActivities.map((act) => (
+              <div
+                key={act.id}
+                className="glass-panel bg-brand-surface-high/50 p-2 rounded-lg flex justify-between items-center group hover:bg-white/5 transition-all"
+              >
+                <div className="flex flex-col">
+                  <span className="font-bold text-xs text-[#e8dfee]">{act.name}</span>
+                  <span className="text-[10px] text-brand-on-surface-variant">
+                    {act.day === 8 ? "Chủ Nhật" : `Thứ ${act.day}`} • Tiết {act.startSlot}-{act.startSlot + act.duration - 1}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteBusy(act.id)}
+                  className="text-brand-on-surface-variant hover:text-brand-error opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all p-1"
+                  title="Xóa lịch bận"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       <hr className="border-[#4a4455]/20" />
@@ -459,13 +449,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </select>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Tiết Đều</span>
+                      <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Tiết Đầu</span>
                       <input
                         type="number"
                         min={1}
                         max={12}
-                        value={newClassStart}
-                        onChange={(e) => setNewClassStart(Math.max(1, Math.min(12, Number(e.target.value))))}
+                        value={newClassStart || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewClassStart(val === "" ? 0 : Number(val));
+                        }}
+                        onBlur={() => {
+                          setNewClassStart(prev => Math.max(1, Math.min(12, prev || 1)));
+                        }}
+                        list="slots-1-12"
                         className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
                       />
                     </div>
@@ -475,8 +472,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         type="number"
                         min={1}
                         max={12}
-                        value={newClassDuration}
-                        onChange={(e) => setNewClassDuration(Math.max(1, Math.min(12, Number(e.target.value))))}
+                        value={newClassDuration || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewClassDuration(val === "" ? 0 : Number(val));
+                        }}
+                        onBlur={() => {
+                          setNewClassDuration(prev => Math.max(1, Math.min(12, prev || 1)));
+                        }}
+                        list="slots-1-12"
                         className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
                       />
                     </div>
@@ -533,6 +537,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           Tính toán tối ưu lịch học
         </button>
       </div>
+
+      {/* Shared datalist for start slots and duration */}
+      <datalist id="slots-1-12">
+        <option value="1" />
+        <option value="2" />
+        <option value="3" />
+        <option value="4" />
+        <option value="5" />
+        <option value="6" />
+        <option value="7" />
+        <option value="8" />
+        <option value="9" />
+        <option value="10" />
+        <option value="11" />
+        <option value="12" />
+      </datalist>
     </aside>
   );
 };
