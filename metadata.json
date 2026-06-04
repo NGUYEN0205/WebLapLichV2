@@ -1,0 +1,6 @@
+{
+  "name": "StudyGrid",
+  "description": "Hệ thống tối ưu hóa và sắp xếp thời khóa biểu tự động tránh trùng lịch cố định.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
