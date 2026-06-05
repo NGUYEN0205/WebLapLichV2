@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { 
   Calendar, BookOpen, Trash2, Plus, X, Sparkles, AlertCircle, RefreshCw, Layers, Pencil, Pin, PinOff
 } from "lucide-react";
-import { BusyActivity, Subject, ClassOption, UniversityPreset } from "../types";
+import { BusyActivity, Subject, ClassOption, UniversityPreset, RegistrationDeadline } from "../types";
 import { DEFAULT_PRESET, OTHER_PRESETS } from "../presets";
+import { DeadlineWidget } from "./DeadlineWidget";
 
 interface SidebarProps {
   busyActivities: BusyActivity[];
@@ -14,6 +15,9 @@ interface SidebarProps {
   loadPreset: (preset: UniversityPreset) => void;
   isOpen: boolean;
   onClose: () => void;
+  registrationDeadline: RegistrationDeadline | null;
+  onAddDeadline: (d: RegistrationDeadline) => void;
+  onRemoveDeadline: () => void;
 }
 
 const COMMON_SUBJECT_SUGGESTIONS = [
@@ -36,6 +40,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   loadPreset,
   isOpen,
   onClose,
+  registrationDeadline,
+  onAddDeadline,
+  onRemoveDeadline,
 }) => {
   // Busy activity inputs
   const [busyName, setBusyName] = useState("");
@@ -283,6 +290,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <X className="w-4 h-4" />
         </button>
+
+        {/* US-16: Deadline & Reminder Countdown Section */}
+        <div className="flex flex-col gap-1.5 border-t border-brand-border/40 pt-4 mt-2">
+          <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-brand-tertiary" />
+            Deadline Đăng ký
+          </h2>
+          <p className="text-xs text-brand-on-surface-variant/80">
+            Đếm ngược thời hạn đóng cổng đăng ký tín chỉ từ trường học
+          </p>
+        </div>
+
+        <DeadlineWidget
+          deadline={registrationDeadline}
+          onAdd={onAddDeadline}
+          onRemove={onRemoveDeadline}
+        />
+
+        <div className="border-t border-brand-border/40 my-2" />
       
       {/* LỊCH CÁ NHÂN CỐ ĐỊNH */}
       <div className="flex flex-col gap-1.5">

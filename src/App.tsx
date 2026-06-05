@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   RefreshCw, Settings, User, Sliders, Calendar, BarChart2, Download, Check, Info, X, AlertCircle, Sun, Moon, Menu
 } from "lucide-react";
@@ -7,7 +7,7 @@ import { CalendarGrid } from "./components/CalendarGrid";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { ExportTab } from "./components/ExportTab";
 import { DEFAULT_PRESET } from "./presets";
-import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset, PinConflictWarning } from "./types";
+import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset, PinConflictWarning, RegistrationDeadline } from "./types";
 
 export default function App() {
   // Application Data States
@@ -40,6 +40,78 @@ export default function App() {
     const saved = localStorage.getItem("studygrid_theme");
     return saved === "light" ? "light" : "dark";
   });
+
+  // US-16: Registration Deadline state and notification scheduler
+  const [registrationDeadline, setRegistrationDeadline] = useState<RegistrationDeadline | null>(() => {
+    const saved = localStorage.getItem("studygrid_deadline");
+    try {
+      return saved ? JSON.parse(saved, (k, v) => {
+        if (k === "deadline" || k === "createdAt") return new Date(v);
+        return v;
+      }) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const notificationTimeoutsRef = useRef<number[]>([]);
+
+  const cancelExistingNotifications = () => {
+    notificationTimeoutsRef.current.forEach((id) => window.clearTimeout(id));
+    notificationTimeoutsRef.current = [];
+  };
+
+  const scheduleNotifications = (dl: RegistrationDeadline) => {
+    cancelExistingNotifications();
+
+    const dTime = new Date(dl.deadline).getTime();
+    const now = Date.now();
+
+    const milestones = [
+      { hours: 24, label: "24 giờ" },
+      { hours: 6, label: "6 giờ" },
+      { hours: 1, label: "1 giờ" },
+    ];
+
+    milestones.forEach(({ hours, label }) => {
+      const triggerTime = dTime - (hours * 60 * 60 * 1000);
+      const delay = triggerTime - now;
+
+      if (delay > 0) {
+        const timeoutId = window.setTimeout(() => {
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("🚨 Sắp Hết Hạn Đăng Ký Học Phần!", {
+              body: `Thời hạn đăng ký học phần cho ${dl.semesterName} chỉ còn chưa đầy ${label}! Hãy tối ưu lịch học ngay bây giờ.`,
+              icon: "/favicon.ico",
+            });
+          }
+        }, delay);
+        notificationTimeoutsRef.current.push(timeoutId);
+      }
+    });
+  };
+
+  const handleDeadlineAdd = (newDeadline: RegistrationDeadline) => {
+    setRegistrationDeadline(newDeadline);
+    localStorage.setItem("studygrid_deadline", JSON.stringify(newDeadline));
+    scheduleNotifications(newDeadline);
+  };
+
+  const handleDeadlineRemove = () => {
+    setRegistrationDeadline(null);
+    localStorage.removeItem("studygrid_deadline");
+    cancelExistingNotifications();
+  };
+
+  // Schedule notifications on mount if there is any active registrationDeadline
+  useEffect(() => {
+    if (registrationDeadline) {
+      scheduleNotifications(registrationDeadline);
+    }
+    return () => {
+      cancelExistingNotifications();
+    };
+  }, []);
 
   // Sync theme class and attribute onto document.documentElement
   useEffect(() => {
@@ -320,6 +392,9 @@ export default function App() {
           loadPreset={handleLoadPreset}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          registrationDeadline={registrationDeadline}
+          onAddDeadline={handleDeadlineAdd}
+          onRemoveDeadline={handleDeadlineRemove}
         />
 
         {/* WORKSPACE AREA */}

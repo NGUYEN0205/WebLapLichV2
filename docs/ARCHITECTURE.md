@@ -52,6 +52,22 @@ Tất cả các định nghĩa Types có thể tìm thấy tại file `/src/type
 - **TimetableSolution (Phương án TKB khả thi):**
   - Tập hợp tối ưu chứa cấu hình lồng ghép ghép hợp lệ từ các môn học nhằm biểu diễn lên Lịch biểu.
 
+- **RegistrationDeadline (Hạn Đăng ký Học phần):**
+  - Đối tượng đại diện cho mốc thời gian đóng cổng đăng ký và lịch sử nhắc nhở.
+  ```typescript
+  export type DeadlineStatus = "upcoming" | "warning" | "critical" | "expired";
+
+  export interface RegistrationDeadline {
+    id: string;
+    semesterName: string;
+    deadline: Date | string;
+    createdAt: Date | string;
+    notificationSent: {
+      [hours: string]: boolean;
+    };
+  }
+  ```
+
 ---
 
 ## 3. Thuật toán Tối ưu hóa & Tìm kiếm (Solver Algorithm)
@@ -100,4 +116,62 @@ Hệ thống quản lý chủ đề sáng/tối đồng bộ sử dụng các bi
 - **Lưu trữ Trạng thái (`theme`):** Sử dụng React State khởi tạo từ giá trị trong `localStorage`. Trạng thái có hai giá trị: `dark` hoặc `light`.
 - **Cập nhật DOM động:** Khi trạng thái `theme` thay đổi, một hiệu ứng phụ (`useEffect`) đồng bộ dữ liệu bằng cách gắn/gỡ class `.light` và thuộc tính `data-theme="light"` trên phần tử gốc `document.documentElement` (`<html>` tag).
 - **Phản hồi tức thì với Tailwind:** Các thuộc tính `@theme` trong Tailwind v4 (như `--color-brand-bg`, `--color-brand-surface`) được định nghĩa tham chiếu động tới các biến CSS Custom Properties tương ứng (ví dụ: `var(--brand-bg)`). Bộ ánh xạ màu sắc sẽ đảo ngược hoàn hảo mà không đòi hỏi nạp lại trang hay xử lý tính toán lại phức tạp.
+
+---
+
+## 6. Hệ thống Nhắc nhở & Đếm ngược Hạn Đăng ký (Deadline Reminder System)
+
+Kiến trúc nhắc nhở hạn đăng ký môn học được nghiên cứu và thiết lập hoàn hảo theo mô hình phản ứng phân tầng bất đồng bộ:
+
+### 6.1 Sơ đồ Thảo luận Thành phần (Component Hierarchy)
+```
+[ App Component (src/App.tsx) ] 
+       (Quản lý trạng thái và Bộ định giờ Notifications)
+                │
+                ▼
+  [ Sidebar Component (src/components/Sidebar.tsx) ]
+                │
+                ▼
+  [ DeadlineWidget Component (src/components/DeadlineWidget.tsx) ]
+       (Form cấu hình, Đồng hồ cơ học Flip 1s & active trigger)
+```
+
+### 6.2 Luồng Dữ liệu & Trạng thái (State Flow Diagram)
+```
+      [ Giao diện người dùng / Gõ Input ]
+                     │ (Submit form)
+                     ▼
+             [ DeadlineWidget ]
+                     │ (onAdd: RegistrationDeadline)
+                     ▼
+              [ App Component ] ──────────────► [ localStorage ]
+                     │ (setRegistrationDeadline / (studygrid_deadline)
+                     ▼  scheduleNotifications)
+             [ setTimeout Schedulers ]
+                     │ (Khi chạm mốc 24h/6h/1h)
+                     ▼
+         [ Web Notifications API ] (Hiển thị đẩy OS)
+```
+
+### 6.3 Cơ chế Lưu trữ và Phục hồi Đối tượng
+- **localStorage Key:** `"studygrid_deadline"`
+- **dateReviver Pattern:** Khi tải trang, chuỗi JSON được phân tích cú pháp bằng `JSON.parse` kết hợp với hàm hồi sinh `dateReviver` giúp khôi phục các chuỗi ISO-8601 của `deadline` và `createdAt` trở về đúng kiểu dữ liệu lớp `Date` thuần của JavaScript. Điều này tránh triệt để lỗi logic khi so sánh phép trừ thời gian.
+  ```typescript
+  JSON.parse(saved, (key, value) => {
+    if (key === "deadline" || key === "createdAt") return new Date(value);
+    return value;
+  });
+  ```
+
+### 6.4 Mẫu Thiết kế Thông báo Đẩy (Web Notifications API Integration)
+- Hệ thống hỗ trợ 2 màng lọc bảo vệ:
+  1. **Định thời trực tiếp (Active Timer Check):** Chạy bên trong vòng lặp `setInterval` 1s cục bộ của `DeadlineWidget` nhằm phản hồi tức thời nếu sinh viên đang thao tác trực diện trên app.
+  2. **Hẹn giờ ở nền (Background Scheduler):** Sử dụng các `setTimeout` thiết lập tại `App.tsx` cho các mốc cảnh báo nghiêm trọng (24 giờ, 6 giờ, và 1 giờ còn lại). Các luồng định giờ được quản lý thông qua ID lưu trữ trong `useRef` nhằm hủy bỏ (`clearTimeout`) an toàn bất cứ khi nào deadline bị xoá hoặc cấu hình lại, giải phóng triệt để rò rỉ bộ nhớ.
+- Kiểm tra hỗ trợ trình duyệt bằng phép so khớp an toàn `"Notification" in window` và chỉ kích hoạt khi `Notification.permission === "granted"`.
+
+### 6.5 Chiến lược Xử lý Múi giờ (Timezone Handling Strategy)
+- Bộ đếm thời gian quy đổi mọi mốc thời gian về con số mili-giây tuyệt đối dựa trên kỷ nguyên giờ chuẩn quốc tế UTC (`Date.prototype.getTime()`). Phép toán hiệu số `targetMs - currentMs` loại trừ hoàn toàn các vấn đề lệch múi giờ giữa các máy khách (Client devices) hay máy chủ đám mây.
+- Khi render mốc thời gian dạng chữ rõ nét cho con học, hệ thống sử dụng `toLocaleString("vi-VN")`, giúp tự động dịch chuyển giờ chuẩn xác khớp với múi giờ tại địa phương của hệ điều hành sinh viên (ví dụ GMT+7 tại Việt Nam).
+
+
 

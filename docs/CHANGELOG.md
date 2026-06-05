@@ -4,6 +4,32 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 
 
 
+## [1.1.8] - 2026-06-05
+### Đồng bộ Hóa và Hoàn thiện Toàn diện Tài liệu Kỹ thuật Tích hợp (US-16 Spec & Architecture)
+- **Đặc tả Tài liệu Nghiệp vụ (SPEC.md):**
+  - Bổ sung cấu trúc mục riêng biệt **2.4 Quản lý Deadline Đăng ký Học phần (US-16)** làm nổi bật vai trò cốt lõi và các mốc thời gian cảnh báo của tính năng lật số đếm ngược.
+  - Liệt kê luồng tương tác người dùng chuẩn từng bước (Step-by-step), bao gồm form nhập liệu, kích hoạt quyền thông báo đẩy của Trình duyệt và cơ chế tự phục hồi lỗi nếu Iframe bị chặn quyền.
+- **Cập nhật Kiến trúc Hệ thống (ARCHITECTURE.md):**
+  - Thiết lập sơ đồ cây thành phần rõ ràng `App` -> `Sidebar` -> `DeadlineWidget`.
+  - Cung cấp sơ đồ luồng dữ liệu ASCII mô tả tiến trình lưu trữ, đồng bộ trạng thái `studygrid_deadline` và hệ thống Web Notifications API.
+  - Làm rõ giải thuật xử lý múi giờ bằng mili-giây tuyệt đối dựa trên kỷ nguyên UTC và định dạng chữ bản địa hóa `toLocaleString("vi-VN")`.
+
+---
+
+## [1.1.7] - 2026-06-05
+### Tích hợp Tính năng Nhắc nhở & Đếm ngược Hạn Đăng ký Học phần (US-16)
+- **Tạo Component DeadlineWidget chuyên biệt:**
+  - Thiết kế widget đếm ngược trực quan với 4 thẻ Ngày-Giờ-Phút-Giây hiển thị hiệu ứng lật mượt mà (Flip mechanical style) sử dụng `motion/react`.
+  - Hỗ trợ thanh tiến trình thời gian co dãn động (Progress track) đổi màu sắc thông minh theo trạng thái khẩn cấp của hạn chót (Emerald -> Yellow -> Pulsing Red -> Dark Slate).
+  - Tự động chạy bộ đếm thời gian thực chính xác 1-giây (Interval timer) và giải phóng bộ nhớ (cleanup effect) khi unmount.
+- **Tương thích Hệ thống Thông báo và Lưu trữ Local:**
+  - Tự động lưu trữ (JSON serialize/deserialize) cấu hình hạn chót xuống localStorage tương thích và đồng bộ sâu với cơ chế của StudyGrid.
+  - Tích hợp Web Notifications API gửi thông báo đẩy của Trình duyệt trực tiếp theo các mốc giờ quan trọng (24h, 6h, 1h) khi sắp đóng cổng đăng ký.
+- **Bố cục Responsive & Khả năng Tiếp xúc:**
+  - Đặt thiết bị cảnh báo tối ưu ở góc trên cùng của thanh điều hướng bên (Sidebar), hiển thị nổi bật trên cả desktop và phiên bản di động.
+
+---
+
 ## [1.1.6] - 2026-06-05
 ### Tối ưu hóa Toàn diện Trang Xuất bản (ExportTab) & Cửa sổ Cấu hình (Settings Modal)
 - **Tinh chỉnh giao diện thẻ Xuất bản trực quan:**
