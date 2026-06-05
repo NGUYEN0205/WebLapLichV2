@@ -12,6 +12,8 @@ interface SidebarProps {
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   onGenerate: () => void;
   loadPreset: (preset: UniversityPreset) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const COMMON_SUBJECT_SUGGESTIONS = [
@@ -32,6 +34,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setSubjects,
   onGenerate,
   loadPreset,
+  isOpen,
+  onClose,
 }) => {
   // Busy activity inputs
   const [busyName, setBusyName] = useState("");
@@ -247,11 +251,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full lg:w-[380px] bg-brand-surface/60 backdrop-blur-xl border-r border-[#4a4455]/30 shadow-2xl flex flex-col p-4 gap-6 overflow-y-auto pb-24 h-full shrink-0">
+    <>
+      {/* Backdrop overlay — chỉ hiện trên mobile/tablet khi mở */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar panel */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full z-50 
+          lg:relative lg:z-auto lg:translate-x-0
+          w-[85vw] max-w-[380px] lg:w-[380px]
+          bg-brand-surface/95 backdrop-blur-xl
+          border-r border-brand-border shadow-2xl
+          flex flex-col p-4 gap-6 overflow-y-auto pb-24 shrink-0
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Nút đóng — chỉ hiện trên mobile/tablet */}
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-xl
+                     bg-brand-surface-high hover:bg-brand-surface-highest
+                     text-brand-text-muted hover:text-brand-text transition-all cursor-pointer"
+          aria-label="Đóng sidebar"
+        >
+          <X className="w-4 h-4" />
+        </button>
       
       {/* LỊCH CÁ NHÂN CỐ ĐỊNH */}
       <div className="flex flex-col gap-1.5">
-        <h2 className="text-lg font-bold text-[#e8dfee] flex items-center gap-2">
+        <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
           <Calendar className="w-5 h-5 text-brand-primary" />
           Lịch cá nhân cố định
         </h2>
@@ -261,7 +296,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Form bận & Danh sách kèm theo */}
-      <div className="bg-brand-surface-low/80 p-3 rounded-xl border border-[#4a4455]/20 flex flex-col gap-3">
+      <div className="bg-brand-surface-medium/60 p-3 rounded-xl border border-brand-border flex flex-col gap-3">
         <form onSubmit={handleAddBusy} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-wider">
@@ -270,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <input
               value={busyName}
               onChange={(e) => setBusyName(e.target.value)}
-              className="bg-brand-surface-high/70 border border-[#4a4455]/40 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-[#e8dfee]"
+              className="bg-brand-surface-high/80 border border-brand-border rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-text dark:text-[#e8dfee]"
               placeholder="Ví dụ: Đi làm thêm, Học Anh văn..."
               type="text"
             />
@@ -282,7 +317,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <select
                 value={busyDay}
                 onChange={(e) => setBusyDay(Number(e.target.value))}
-                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
+                className="bg-brand-surface-high border border-brand-border rounded-lg p-2 text-xs text-brand-text dark:text-[#e8dfee] focus:outline-none"
               >
                 <option value={2}>Thứ Hai</option>
                 <option value={3}>Thứ Ba</option>
@@ -305,7 +340,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onBlur={() => {
                   setBusyStart(prev => Math.max(1, Math.min(12, prev || 1)));
                 }}
-                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
+                className="bg-brand-surface-high border border-brand-border rounded-lg p-2 text-xs text-brand-text dark:text-[#e8dfee] focus:outline-none"
                 type="number"
                 min={1}
                 max={12}
@@ -324,7 +359,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onBlur={() => {
                   setBusyDuration(prev => Math.max(1, Math.min(12, prev || 1)));
                 }}
-                className="bg-brand-surface-high border border-[#4a4455]/45 rounded-lg p-2 text-xs text-[#e8dfee] focus:outline-none"
+                className="bg-brand-surface-high border border-brand-border rounded-lg p-2 text-xs text-brand-text dark:text-[#e8dfee] focus:outline-none"
                 type="number"
                 min={1}
                 max={12}
@@ -343,22 +378,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </form>
 
         {/* Danh sách bận nằm ngay dưới nút thêm */}
-        <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1 border-t border-[#4a4455]/20 pt-3 mt-1">
+        <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1 border-t border-brand-border pt-3 mt-1">
           <span className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-wider block">
             Lịch bận đã thêm ({busyActivities.length}):
           </span>
           {busyActivities.length === 0 ? (
-            <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-2 border border-dashed border-[#4a4455]/20 rounded-xl">
+            <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-2 border border-dashed border-brand-border rounded-xl">
               Chưa có lịch bận cố định nào
             </p>
           ) : (
             busyActivities.map((act) => (
               <div
                 key={act.id}
-                className="glass-panel bg-brand-surface-high/50 p-2 rounded-lg flex justify-between items-center group hover:bg-white/5 transition-all"
+                className="glass-panel bg-brand-surface-high/60 p-2 rounded-lg flex justify-between items-center group hover:bg-brand-primary/8 transition-all"
               >
                 <div className="flex flex-col">
-                  <span className="font-bold text-xs text-[#e8dfee]">{act.name}</span>
+                  <span className="font-bold text-xs text-brand-text">{act.name}</span>
                   <span className="text-[10px] text-brand-on-surface-variant">
                     {act.day === 8 ? "Chủ Nhật" : `Thứ ${act.day}`} • Tiết {act.startSlot}-{act.startSlot + act.duration - 1}
                   </span>
@@ -377,11 +412,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <hr className="border-[#4a4455]/20" />
+      <hr className="border-brand-border" />
 
       {/* MÔN HỌC & LỚP HỌC */}
       <div className="flex flex-col gap-1.5">
-        <h2 className="text-lg font-bold text-[#e8dfee] flex items-center gap-2">
+        <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-brand-secondary" />
           Môn học &amp; Lớp học
         </h2>
@@ -398,7 +433,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             onChange={(e) => setSubjectName(e.target.value)}
-            className="flex-1 bg-brand-surface-high/70 border border-[#4a4455]/40 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-[#e8dfee]"
+            className="flex-1 bg-brand-surface-high/80 border border-brand-border rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-text dark:text-[#e8dfee]"
             placeholder="Tìm hoặc Nhập tên môn học..."
             type="text"
             onKeyDown={(e) => {
@@ -414,7 +449,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Suggestions Dropdown */}
           {showSuggestions && (
-            <div className="absolute top-[105%] left-0 w-full bg-brand-surface-highest border border-[#4a4455]/65 rounded-xl shadow-2xl z-20 max-h-[160px] overflow-y-auto p-1.5 flex flex-col gap-1">
+            <div className="absolute top-[105%] left-0 w-full bg-brand-surface-highest border border-brand-border rounded-xl shadow-2xl z-20 max-h-[160px] overflow-y-auto p-1.5 flex flex-col gap-1">
               <span className="text-[9px] font-bold text-brand-on-surface-variant px-2 py-1 uppercase tracking-wider block">Gợi ý môn phổ biến:</span>
               {COMMON_SUBJECT_SUGGESTIONS.filter(item => 
                 item.toLowerCase().includes(subjectName.toLowerCase())
@@ -422,7 +457,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={idx}
                   onMouseDown={() => handleAddSubject(item)}
-                  className="text-left text-xs bg-transparent hover:bg-white/5 transition px-2 py-1.5 rounded-lg text-brand-on-surface"
+                  className="text-left text-xs bg-transparent hover:bg-brand-primary/8 transition px-2 py-1.5 rounded-lg text-brand-on-surface"
                 >
                   {item}
                 </button>
@@ -435,7 +470,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Danh sách môn học */}
       <div className="flex flex-col gap-3">
         {subjects.length === 0 ? (
-          <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-6 border border-dashed border-[#4a4455]/20 rounded-xl">
+          <p className="text-[11px] text-brand-on-surface-variant opacity-60 italic text-center py-6 border border-dashed border-brand-border rounded-xl">
             Chưa có môn học nào được thêm. Hãy chọn dữ liệu mẫu ở trên để bắt đầu nhanh!
           </p>
         ) : (
@@ -443,10 +478,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div
               key={subj.id}
               style={{ borderColor: subj.color }}
-              className="border-l-4 bg-brand-surface-low/60 rounded-r-xl p-3 flex flex-col gap-2 border-y border-r border-[#4a4455]/15"
+              className="border-l-4 bg-brand-surface-medium/50 rounded-r-xl p-3 flex flex-col gap-2 border-y border-r border-brand-border"
             >
               <div className="flex justify-between items-start gap-1">
-                <span className="font-bold text-sm text-[#e8dfee] line-clamp-1" style={{ color: subj.color }}>{subj.name}</span>
+                <span className="font-bold text-sm text-brand-text line-clamp-1" style={{ color: subj.color }}>{subj.name}</span>
                 <button
                   onClick={() => handleDeleteSubject(subj.id)}
                   className="text-brand-error hover:scale-105 transition-all p-1"
@@ -469,13 +504,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       return (
                         <div
                           key={cls.id}
-                          className="col-span-2 bg-brand-surface-high/85 p-3 rounded-lg border border-brand-primary/50 flex flex-col gap-2 shadow-inner z-10 text-left"
+                          className="col-span-2 bg-brand-surface-high p-3 rounded-lg border border-brand-primary/50 flex flex-col gap-2 shadow-inner z-10 text-left"
                         >
                           <div className="flex justify-between items-center">
                             <span className="text-[10px] font-bold text-brand-primary uppercase">Sửa lớp học phần</span>
                             <button
                               onClick={() => setEditingClassId(null)}
-                              className="text-brand-on-surface-variant hover:text-[#e8dfee]"
+                              className="text-brand-on-surface-variant hover:text-brand-text"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
@@ -488,16 +523,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 value={editClassName}
                                 onChange={(e) => setEditClassName(e.target.value)}
                                 placeholder="Ví dụ: Lớp 01"
-                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-xs rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                className="bg-brand-surface-highest border border-brand-border text-xs rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
                               />
                             </div>
                             
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase font-bold">Thứ</span>
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Thứ</span>
                               <select
                                 value={editClassDay}
                                 onChange={(e) => setEditClassDay(Number(e.target.value))}
-                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none"
+                                className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none"
                               >
                                 <option value={2}>Thứ Hai</option>
                                 <option value={3}>Thứ Ba</option>
@@ -524,7 +559,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                   setEditClassStart(prev => Math.max(1, Math.min(12, prev || 1)));
                                 }}
                                 list="slots-1-12"
-                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
                               />
                             </div>
 
@@ -543,7 +578,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                   setEditClassDuration(prev => Math.max(1, Math.min(12, prev || 1)));
                                 }}
                                 list="slots-1-12"
-                                className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
                               />
                             </div>
 
@@ -554,13 +589,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                   value={editClassRoom}
                                   onChange={(e) => setEditClassRoom(e.target.value)}
                                   placeholder="Phòng A.201"
-                                  className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                  className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
                                 />
                                 <input
                                   value={editClassTeacher}
                                   onChange={(e) => setEditClassTeacher(e.target.value)}
                                   placeholder="Thầy Khánh"
-                                  className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                                  className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
                                 />
                               </div>
                             </div>
@@ -569,7 +604,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <div className="flex gap-2 justify-end mt-1">
                             <button
                               onClick={() => setEditingClassId(null)}
-                              className="bg-brand-surface-highest px-3 py-1 text-[10px] font-bold rounded hover:bg-white/5 text-[#e8dfee] transition-all cursor-pointer"
+                              className="bg-brand-surface-highest px-3 py-1 text-[10px] font-bold rounded hover:bg-brand-primary/8 text-brand-text transition-all cursor-pointer"
                             >
                               Hủy
                             </button>
@@ -588,13 +623,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <div
                         key={cls.id}
                         className={`bg-brand-surface-highest/40 p-2 rounded-lg border relative group/cls min-h-[64px] flex flex-col justify-between transition-all text-left ${
-                          cls.isPinned ? "border-amber-400 bg-amber-400-[0.1]" : "border-[#4a4455]/20 hover:bg-white/5"
+                          cls.isPinned ? "border-amber-400 bg-amber-400-[0.1]" : "border-brand-border hover:bg-brand-primary/8"
                         }`}
                         style={cls.isPinned ? { borderColor: "#ffb95f", backgroundColor: "rgba(255, 185, 95, 0.05)" } : undefined}
                       >
                         <div>
                           <div className="flex items-center gap-1.5 justify-between">
-                            <span className="block text-[10px] font-bold text-[#e8dfee] line-clamp-1 pr-8">
+                            <span className="block text-[10px] font-bold text-brand-text line-clamp-1 pr-8">
                               {cls.className}
                             </span>
                             {cls.isPinned && (
@@ -622,10 +657,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </div>
 
                         {/* HOVER TOOLBAR ACTIONS */}
-                        <div className="absolute top-1 right-1 flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover/cls:opacity-100 transition-all bg-brand-surface-highest border border-[#4a4455]/20 p-0.5 rounded shadow-lg z-15">
+                        <div className="absolute top-1 right-1 flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover/cls:opacity-100 transition-all bg-brand-surface-highest border border-brand-border p-0.5 rounded shadow-lg z-15">
                           <button
                             onClick={() => handleTogglePinClass(subj.id, cls.id)}
-                            className={`p-0.5 rounded hover:bg-white/10 transition duration-150 cursor-pointer ${
+                            className={`p-0.5 rounded hover:bg-brand-primary/8 transition duration-150 cursor-pointer ${
                               cls.isPinned ? "text-amber-400" : "text-brand-on-surface-variant hover:text-amber-300"
                             }`}
                             title={cls.isPinned ? "Bỏ bắt buộc" : "Bắt buộc giữ lại"}
@@ -635,7 +670,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                           <button
                             onClick={() => handleStartEditClass(cls)}
-                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-primary hover:bg-white/10 transition duration-150 cursor-pointer"
+                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-primary hover:bg-brand-primary/8 transition duration-150 cursor-pointer"
                             title="Sửa nhanh lớp"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -643,7 +678,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                           <button
                             onClick={() => handleDeleteClass(subj.id, cls.id)}
-                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-error hover:bg-white/10 transition duration-150 cursor-pointer"
+                            className="p-0.5 rounded text-brand-on-surface-variant hover:text-brand-error hover:bg-brand-primary/8 transition duration-150 cursor-pointer"
                             title="Xóa lớp học phần"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -657,10 +692,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Add class option inline toggle */}
               {newClassSubjectId === subj.id ? (
-                <div className="bg-brand-surface-high/65 p-2 rounded-lg border border-[#4a4455]/30 flex flex-col gap-2 mt-1">
+                <div className="bg-brand-surface-high/65 p-2 rounded-lg border border-brand-border flex flex-col gap-2 mt-1">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold text-brand-primary uppercase">Mở lớp học mới</span>
-                    <button onClick={() => setNewClassSubjectId(null)} className="text-brand-on-surface-variant hover:text-[#e8dfee]">
+                    <button onClick={() => setNewClassSubjectId(null)} className="text-brand-on-surface-variant hover:text-brand-text">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -672,7 +707,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         value={newClassName}
                         onChange={(e) => setNewClassName(e.target.value)}
                         placeholder="Lớp 01, Lớp L02"
-                        className="bg-brand-surface-highest border border-[#4a4455]/40 text-xs rounded p-1 text-[#e8dfee]"
+                        className="bg-brand-surface-highest border border-brand-border text-xs rounded p-1 text-brand-text dark:text-[#e8dfee]"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5">
@@ -680,7 +715,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <select
                         value={newClassDay}
                         onChange={(e) => setNewClassDay(Number(e.target.value))}
-                        className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
+                        className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                       >
                         <option value={2}>Thứ Hai</option>
                         <option value={3}>Thứ Ba</option>
@@ -706,7 +741,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           setNewClassStart(prev => Math.max(1, Math.min(12, prev || 1)));
                         }}
                         list="slots-1-12"
-                        className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
+                        className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5">
@@ -724,7 +759,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           setNewClassDuration(prev => Math.max(1, Math.min(12, prev || 1)));
                         }}
                         list="slots-1-12"
-                        className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
+                        className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                       />
                     </div>
                     <div className="flex flex-col gap-0.5 col-span-2">
@@ -734,13 +769,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           value={newClassRoom}
                           onChange={(e) => setNewClassRoom(e.target.value)}
                           placeholder="Phòng A.201"
-                          className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
+                          className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                         />
                         <input
                           value={newClassTeacher}
                           onChange={(e) => setNewClassTeacher(e.target.value)}
                           placeholder="Thầy Khánh"
-                          className="bg-brand-surface-highest border border-[#4a4455]/40 text-[10px] rounded p-1 text-[#e8dfee]"
+                          className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                         />
                       </div>
                     </div>
@@ -771,7 +806,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* CTA Bottom bar */}
-      <div className="mt-auto pt-4 border-t border-[#4a4455]/10">
+      <div className="mt-auto pt-4 border-t border-brand-border">
         <button
           onClick={onGenerate}
           className="w-full bg-[#00a572] hover:bg-[#00c58a] text-[#ffffff] py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-secondary-container/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer duration-200"
@@ -797,5 +832,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <option value="12" />
       </datalist>
     </aside>
+    </>
   );
 };

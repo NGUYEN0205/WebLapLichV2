@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
-  RefreshCw, Settings, User, Sliders, Calendar, BarChart2, Download, Check, Info, X, AlertCircle, Sun, Moon
+  RefreshCw, Settings, User, Sliders, Calendar, BarChart2, Download, Check, Info, X, AlertCircle, Sun, Moon, Menu
 } from "lucide-react";
 import { Sidebar } from "./components/Sidebar";
 import { CalendarGrid } from "./components/CalendarGrid";
@@ -31,6 +31,9 @@ export default function App() {
 
   // Settings Modal State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Mobile Sidebar Drawer State
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Theme Toggle State
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -233,46 +236,42 @@ export default function App() {
     <div className="bg-brand-bg text-brand-text font-sans overflow-hidden h-screen flex flex-col relative select-none">
       
       {/* TOP HEADER NAVIGATION BAR */}
-      <header className="bg-brand-bg/60 backdrop-blur-xl border-b border-[#4a4455]/15 flex justify-between items-center px-6 w-full h-16 shrink-0 z-40 select-none">
+      <header className="bg-brand-surface/80 backdrop-blur-xl border-b border-brand-border flex justify-between items-center px-6 w-full h-16 shrink-0 z-40 select-none">
         
         {/* LOGO & DESKTOP NAVIGATION SCHEME */}
         <div className="flex items-center gap-4">
+          {/* Hamburger button — chỉ hiện trên mobile/tablet */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-xl text-brand-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-all active:scale-95 cursor-pointer"
+            aria-label="Mở menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
           <div className="font-sans font-bold text-lg md:text-xl text-brand-primary tracking-tight select-none flex items-center gap-2">
             <Sliders className="w-5 h-5 text-brand-primary animate-pulse" />
             StudyGrid
           </div>
           
-          <nav className="hidden md:flex gap-6 ml-8 select-none text-xs font-semibold">
-            <button
-              onClick={() => setSelectedTab("Timetable")}
-              className={`pb-1 transition-all border-b-2 cursor-pointer ${
-                selectedTab === "Timetable"
-                  ? "text-brand-primary border-brand-primary font-bold"
-                  : "text-brand-on-surface-variant hover:text-brand-primary border-transparent"
-              }`}
-            >
-              Lịch biểu (Grid)
-            </button>
-            <button
-              onClick={() => setSelectedTab("Analytics")}
-              className={`pb-1 transition-all border-b-2 cursor-pointer ${
-                selectedTab === "Analytics"
-                  ? "text-brand-primary border-brand-primary font-bold"
-                  : "text-brand-on-surface-variant hover:text-brand-primary border-transparent"
-              }`}
-            >
-              Phân tích (Analytics)
-            </button>
-            <button
-              onClick={() => setSelectedTab("Export")}
-              className={`pb-1 transition-all border-b-2 cursor-pointer ${
-                selectedTab === "Export"
-                  ? "text-brand-primary border-brand-primary font-bold"
-                  : "text-brand-on-surface-variant hover:text-brand-primary border-transparent"
-              }`}
-            >
-              Đồng bộ &amp; Xuất (.ICS)
-            </button>
+          <nav className="hidden md:flex gap-2 ml-8 select-none">
+            {[
+              { id: "Timetable", label: "Lịch biểu (Grid)" },
+              { id: "Analytics", label: "Phân tích (Analytics)" },
+              { id: "Export", label: "Đồng bộ & Xuất (.ICS)" },
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setSelectedTab(id as any)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedTab === id
+                    ? "bg-brand-primary text-white shadow-sm shadow-brand-primary/30"
+                    : "text-brand-text-muted hover:text-brand-primary hover:bg-brand-primary/10"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -319,6 +318,8 @@ export default function App() {
           setSubjects={setSubjects}
           onGenerate={forceCalculate}
           loadPreset={handleLoadPreset}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
 
         {/* WORKSPACE AREA */}
@@ -367,29 +368,38 @@ export default function App() {
       </main>
 
       {/* MOBILE BOTTOM NAVIGATION TRACK */}
-      <nav className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-brand-surface-highest/80 backdrop-blur-lg border-t border-[#4a4455]/20 md:hidden">
+      <nav className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-brand-surface/90 backdrop-blur-lg border-t border-brand-border md:hidden">
         <button
-          onClick={() => setSelectedTab("Timetable")}
+          onClick={() => {
+            setSelectedTab("Timetable");
+            setSidebarOpen(false);
+          }}
           className={`flex flex-col items-center justify-center scale-90 active:scale-100 transition-transform flex-1 h-full ${
-            selectedTab === "Timetable" ? "text-brand-primary font-bold" : "text-brand-on-surface-variant"
+            selectedTab === "Timetable" ? "text-brand-primary font-bold" : "text-brand-text-muted"
           }`}
         >
           <Calendar className="w-5 h-5 mb-0.5" />
           <span className="text-[10px]">Lịch Biểu</span>
         </button>
         <button
-          onClick={() => setSelectedTab("Analytics")}
+          onClick={() => {
+            setSelectedTab("Analytics");
+            setSidebarOpen(false);
+          }}
           className={`flex flex-col items-center justify-center scale-90 active:scale-100 transition-transform flex-1 h-full ${
-            selectedTab === "Analytics" ? "text-brand-primary font-bold" : "text-brand-on-surface-variant"
+            selectedTab === "Analytics" ? "text-brand-primary font-bold" : "text-brand-text-muted"
           }`}
         >
           <BarChart2 className="w-5 h-5 mb-0.5" />
           <span className="text-[10px]">Phân Tích</span>
         </button>
         <button
-          onClick={() => setSelectedTab("Export")}
+          onClick={() => {
+            setSelectedTab("Export");
+            setSidebarOpen(false);
+          }}
           className={`flex flex-col items-center justify-center scale-90 active:scale-100 transition-transform flex-1 h-full ${
-            selectedTab === "Export" ? "text-brand-primary font-bold" : "text-brand-on-surface-variant"
+            selectedTab === "Export" ? "text-brand-primary font-bold" : "text-brand-text-muted"
           }`}
         >
           <Download className="w-5 h-5 mb-0.5" />
@@ -399,11 +409,11 @@ export default function App() {
 
       {/* INSTRUCTIONAL SETTINGS MODAL */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-[#100d16]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-brand-surface p-6 rounded-2xl border border-[#4a4455]/40 max-w-lg w-full flex flex-col gap-4 relative animate-fade-in shadow-2xl select-text">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-brand-surface p-6 rounded-2xl border border-brand-border max-w-lg w-full flex flex-col gap-4 relative animate-fade-in shadow-2xl select-text">
             <button
               onClick={() => setShowSettingsModal(false)}
-              className="absolute top-4 right-4 p-1 text-brand-on-surface-variant hover:text-[#e8dfee] rounded-lg hover:bg-white/5 transition"
+              className="absolute top-4 right-4 p-1 text-brand-on-surface-variant hover:text-brand-text rounded-lg hover:bg-white/5 transition"
             >
               <X className="w-5 h-5" />
             </button>

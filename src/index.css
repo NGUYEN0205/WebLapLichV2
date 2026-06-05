@@ -24,25 +24,29 @@
 }
 
 :root[data-theme="light"], :root.light {
-  --brand-bg: #f5f3f7;
-  --brand-surface: #ffffff;
-  --brand-surface-medium: #eae6f0;
-  --brand-surface-high: #dfdae8;
-  --brand-surface-highest: #cfc6dc;
-  --brand-primary: #6c3cf7;
-  --brand-primary-container: #eae4fd;
-  --brand-on-primary-container: #331070;
-  --brand-secondary: #0f9f72;
-  --brand-secondary-container: #e6fcf5;
-  --brand-on-secondary: #064e3b;
-  --brand-tertiary: #df7820;
-  --brand-error: #d92d4b;
-  --brand-error-container: #ffe4e6;
-  --brand-text: #1d1526;
-  --brand-text-muted: #645a72;
-  --brand-border: rgba(0, 0, 0, 0.08);
-  --brand-glass: rgba(255, 255, 255, 0.7);
-  --brand-grid-lines: rgba(0, 0, 0, 0.05);
+  --brand-bg: #F0EEF8;
+  --brand-surface: #FFFFFF;
+  --brand-surface-low: #F7F5FF;
+  --brand-surface-medium: #EDE9F8;
+  --brand-surface-high: #DDD7F3;
+  --brand-surface-highest: #CBC3EA;
+  --brand-primary: #5B21B6;
+  --brand-primary-container: #EDE9FE;
+  --brand-on-primary-container: #2E1065;
+  --brand-on-primary: #FFFFFF;
+  --brand-secondary: #047857;
+  --brand-secondary-container: #D1FAE5;
+  --brand-on-secondary: #064E3B;
+  --brand-tertiary: #B45309;
+  --brand-error: #BE123C;
+  --brand-error-container: #FFE4E6;
+  --brand-text: #0F0A1E;
+  --brand-text-muted: #5B4F78;
+  --brand-on-surface-variant: #5B4F78;
+  --brand-on-surface: #0F0A1E;
+  --brand-border: rgba(91, 33, 182, 0.15);
+  --brand-glass: rgba(255, 255, 255, 0.90);
+  --brand-grid-lines: rgba(91, 33, 182, 0.07);
 }
 
 @theme {
@@ -104,3 +108,30 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--brand-surface-high);
 }
+
+:root[data-theme="light"] body,
+:root.light body {
+  background-color: var(--brand-bg);
+}
+
+/* Inputs sáng lên trong light mode */
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root.light input,
+:root.light select {
+  background-color: #FFFFFF !important;
+  color: #0F0A1E !important;
+  border-color: rgba(91, 33, 182, 0.25) !important;
+}
+
+:root[data-theme="light"] input::placeholder,
+:root.light input::placeholder {
+  color: #9B8FBD !important;
+}
+
+/* Card/panel nổi hơn với shadow */
+:root[data-theme="light"] .glass-panel,
+:root.light .glass-panel {
+  box-shadow: 0 1px 4px rgba(91,33,182,0.08), 0 4px 20px rgba(91,33,182,0.06);
+}
+

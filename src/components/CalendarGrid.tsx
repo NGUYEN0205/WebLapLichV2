@@ -85,13 +85,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     <div className="flex-1 p-6 overflow-y-auto bg-brand-bg/95 relative flex flex-col gap-6 select-none">
       
       {/* HEADER BAR FOR RESULTS */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#4a4455]/20 pb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-brand-border pb-4">
         <div className="flex items-center gap-3.5">
           <div className="bg-brand-primary-container/20 p-2 rounded-xl text-brand-primary">
             <Award className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-[#e8dfee] flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-brand-text flex items-center gap-2">
               3. Kết quả xếp lịch biểu
             </h1>
             <p className="text-xs text-brand-on-surface-variant">
@@ -107,20 +107,20 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
         <div className="flex items-center gap-3 w-full md:w-auto">
           {solutions.length > 0 && (
-            <div className="bg-brand-surface-highest/60 border border-[#4a4455]/30 flex items-center rounded-xl p-1 shrink-0">
+            <div className="bg-brand-surface-medium border border-brand-border flex items-center rounded-xl p-1 shrink-0">
               <button
                 onClick={handlePrev}
-                className="p-1.5 hover:text-brand-primary transition rounded-lg hover:bg-white/5 active:scale-95 cursor-pointer"
+                className="p-1.5 hover:text-brand-primary transition rounded-lg hover:bg-brand-primary/10 active:scale-95 cursor-pointer"
                 title="Phương án trước"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="px-3 font-semibold text-xs text-[#e8dfee] min-w-[110px] text-center">
+              <span className="px-3 font-semibold text-xs text-brand-text min-w-[110px] text-center">
                 Phương án {currentSolutionIndex + 1}/{solutions.length}
               </span>
               <button
                 onClick={handleNext}
-                className="p-1.5 hover:text-brand-primary transition rounded-lg hover:bg-white/5 active:scale-95 cursor-pointer"
+                className="p-1.5 hover:text-brand-primary transition rounded-lg hover:bg-brand-primary/10 active:scale-95 cursor-pointer"
                 title="Phương án sau"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -162,14 +162,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl flex flex-col min-w-[760px]">
         
         {/* DAYS HEADER CHIPS */}
-        <div className="calendar-grid bg-brand-surface-highest/50 border-b border-[#4a4455]/20 shrink-0">
-          <div className="flex items-center justify-center font-extrabold text-brand-on-surface-variant text-xs border-r border-[#4a4455]/15 h-12 uppercase tracking-widest text-[#958da1]">
+        <div className="calendar-grid bg-brand-surface-medium/80 border-b border-brand-border shrink-0">
+          <div className="flex items-center justify-center font-extrabold text-brand-text-muted text-xs border-r border-brand-border h-12 uppercase tracking-widest">
             TIẾT
           </div>
           {daysHeader.map((day) => (
             <div
               key={day.value}
-              className="flex items-center justify-center font-bold text-sm text-[#e8dfee] border-r border-[#4a4455]/10 last:border-r-0"
+              className="flex items-center justify-center font-bold text-sm text-brand-text border-r border-brand-border/60 last:border-r-0"
             >
               {day.label}
             </div>
@@ -182,13 +182,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           {/* BACKGROUND ROWS AND COLUMNS LINES */}
           <div className="absolute inset-0 calendar-grid pointer-events-none">
             {/* Label Column Grid boundaries */}
-            <div className="border-r border-[#4a4455]/15 h-full"></div>
+            <div className="border-r border-brand-border h-full"></div>
             
             {/* Days Columns */}
             {Array.from({ length: 7 }).map((_, i) => (
               <div 
                 key={i} 
-                className="border-r border-[#4a4455]/10 h-full last:border-r-0 relative"
+                className="border-r border-brand-border/60 h-full last:border-r-0 relative"
               >
                 {/* Horizontal time grids */}
                 {Array.from({ length: 12 }).map((_, rIdx) => (
@@ -198,7 +198,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                       top: `${rIdx * slotHeight}px`,
                       height: `${slotHeight}px`
                     }}
-                    className="absolute left-0 w-full border-b border-[#4a4455]/5"
+                    className="absolute left-0 w-full border-b border-brand-border/40"
                   />
                 ))}
               </div>
@@ -206,7 +206,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
 
           {/* LEFT-SIDE PERIOD BLOCKS WITH DETAILED START TIMES */}
-          <div className="absolute top-0 left-0 w-[80px] h-full border-r border-[#4a4455]/15 pointer-events-none">
+          <div className="absolute top-0 left-0 w-[80px] h-full border-r border-brand-border pointer-events-none">
             {slotTimes.map((time) => (
               <div
                 key={time.slot}
@@ -214,7 +214,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   top: `${(time.slot - 1) * slotHeight}px`,
                   height: `${slotHeight}px`
                 }}
-                className="absolute w-full flex flex-col justify-center items-center text-center border-b border-[#4a4455]/10 bg-brand-surface-low/30"
+                className="absolute w-full flex flex-col justify-center items-center text-center border-b border-brand-border/60 bg-brand-surface-medium/30"
               >
                 <span className="font-bold text-xs text-brand-primary">{time.slot}</span>
                 <span className="text-[9px] text-[#ccc3d8]/60 mt-0.5 font-mono tracking-tight">{time.start}</span>
@@ -239,7 +239,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 const currentDayBusy = busyActivities.filter((act) => act.day === dayValue);
 
                 return (
-                  <div key={dayValue} className="relative h-full border-r border-[#4a4455]/10 last:border-r-0">
+                  <div key={dayValue} className="relative h-full border-r border-brand-border/60 last:border-r-0">
                     
                     {/* Render active class option card */}
                     {currentDayClasses.map((item) => {
@@ -321,9 +321,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                             end: slotTimes[busy.startSlot + busy.duration - 2]?.end || "",
                             isBusy: true,
                           })}
-                          className="absolute left-1.5 right-1.5 bg-brand-surface-highest/20 hover:bg-brand-surface-highest/30 border border-[#ccc3d8]/20 rounded-xl p-2.5 flex flex-col justify-start gap-1 z-10 opacity-70 group hover:opacity-90 transition-all cursor-pointer border-dashed"
+                          className="absolute left-1.5 right-1.5 bg-brand-surface-high border border-brand-border rounded-xl p-2.5 flex flex-col justify-start gap-1 z-10 opacity-80 group hover:opacity-100 transition-all cursor-pointer border-dashed"
                         >
-                          <span className="block font-semibold text-xs text-[#e8dfee]/85 line-clamp-1">
+                          <span className="block font-semibold text-brand-text-muted text-[10px] uppercase font-bold tracking-wide line-clamp-1">
                             {busy.name}
                           </span>
                           <span className="text-[8px] font-mono text-brand-on-surface-variant opacity-80 uppercase tracking-widest block">
@@ -349,10 +349,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
       {/* FOOTER INTERACTIVE DETAILS DRAWER / POPOVER DECORATOR */}
       {selectedDetails && (
-        <div className="bg-brand-surface-medium/95 rounded-2xl border border-[#4a4455]/30 p-4 shadow-2xl flex flex-col gap-3 relative animate-fade-in animate-slide-up">
+        <div className="bg-brand-surface rounded-2xl border border-brand-border p-4 shadow-xl shadow-brand-primary/10 flex flex-col gap-3 relative animate-fade-in animate-slide-up">
           <button 
             onClick={() => setSelectedDetails(null)} 
-            className="absolute top-3 right-3 text-brand-on-surface-variant hover:text-[#e8dfee] p-1 rounded-lg"
+            className="absolute top-3 right-3 text-brand-on-surface-variant hover:text-brand-text p-1 rounded-lg"
           >
             <XIcon className="w-5 h-5" />
           </button>
@@ -362,20 +362,20 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               style={{ backgroundColor: selectedDetails.color || "#4e4455" }}
               className="w-3.5 h-3.5 rounded-full"
             />
-            <h3 className="font-bold text-base text-[#e8dfee]">
+            <h3 className="font-bold text-base text-brand-text">
               {selectedDetails.title}
             </h3>
-            <span className="bg-brand-surface-highest text-xs text-brand-primary px-2 py-0.5 rounded-md border border-[#4a4455]/20">
+            <span className="bg-brand-surface-highest text-xs text-brand-primary px-2 py-0.5 rounded-md border border-brand-border">
               {selectedDetails.subTitle}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1 bg-brand-surface-low/40 p-3 rounded-xl border border-[#4a4455]/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1 bg-brand-surface-medium/50 p-3 rounded-xl border border-brand-border/60">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-brand-primary shrink-0" />
               <div>
                 <span className="block text-[10px] text-brand-on-surface-variant uppercase">Thời gian</span>
-                <span className="text-xs font-semibold text-[#e8dfee]">
+                <span className="text-xs font-semibold text-brand-text">
                   {getDayLabel(selectedDetails.day)}: {selectedDetails.start} - {selectedDetails.end}
                 </span>
               </div>
@@ -386,7 +386,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 <MapPin className="w-4 h-4 text-brand-secondary shrink-0" />
                 <div>
                   <span className="block text-[10px] text-brand-on-surface-variant uppercase">Phòng học</span>
-                  <span className="text-xs font-semibold text-[#e8dfee]">
+                  <span className="text-xs font-semibold text-brand-text">
                     {selectedDetails.room}
                   </span>
                 </div>
@@ -398,7 +398,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 <User className="w-4 h-4 text-brand-tertiary shrink-0" />
                 <div>
                   <span className="block text-[10px] text-brand-on-surface-variant uppercase">Giảng viên</span>
-                  <span className="text-xs font-semibold text-[#e8dfee]">
+                  <span className="text-xs font-semibold text-brand-text">
                     {selectedDetails.teacher}
                   </span>
                 </div>

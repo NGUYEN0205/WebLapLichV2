@@ -2,6 +2,44 @@
 
 Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống **StudyGrid Scheduler** được ghi nhận chi tiết tại đây.
 
+
+
+## [1.1.2] - 2026-06-05
+### Chuyển đổi Sidebar thành Drawer trên Mobile/Tablet
+- **Thiết kế Drawer Slide-in tiện lợi:**
+  - Sidebar không còn chiếm trọn màn hình và chặn toàn bộ lịch biểu trên các thiết bị Mobile và Tablet (< 1024px). Giờ đây, Sidebar sẽ hoạt động giống như một Drawer trượt từ trái sang (`translate-x`) cực kỳ êm ái và mượt mà.
+  - Tích hợp lớp phủ tối mờ (`backdrop-blur-sm bg-black/50`) cho phép nhấp vào vùng trống để tự động đóng Drawer.
+- **Nút điều hướng và tương tác thông minh:**
+  - Thêm biểu tượng menu Hamburger trên Header chính để mở Sidebar dễ dàng chỉ với một cú chạm.
+  - Thêm nút Đóng gọn gàng (`X`) ở góc phải của Drawer trên thiết bị di động.
+  - Cơ chế tự động đóng Drawer thông minh ngay khi người dùng chọn tab mới từ thanh điều hướng di động (Bottom Navigation) giúp tối ưu hóa không gian làm việc.
+
+---
+### Tinh chỉnh Header, Navigation & Modal Backdrop
+- **Cải tiến Header chính & Thanh điều hướng Bottom:**
+  - Chuyển đổi màu sắc ở Header và thanh điều hướng di động sang các biến giao diện động (`bg-brand-surface/80`, `border-brand-border`, `bg-brand-surface/90`) giúp giao diện cực kỳ mượt mà, sáng sủa và thanh thoát.
+  - Thiết kế lại các tab điều hướng trên máy tính với kiểu dáng bo tròn (pill style) cao cấp thay cho kiểu viền gạch dưới truyền thống, kết hợp hiệu ứng đổ bóng chủ động sắc nét và màu sắc nhấn thương hiệu dịu mát.
+- **Tối ưu hóa Backdrop & Hộp thoại Cài đặt:**
+  - Chuyển đổi lớp phủ mờ của hộp thoại cài đặt thuật toán sang màu nền bán trong suốt sang trọng (`bg-black/50 backdrop-blur-md`).
+  - Đồng bộ hóa đường viền và màu sắc của các nút tương tác bên trong hộp thoại theo đúng ngôn ngữ thiết kế chung.
+
+---
+
+## [1.1.1] - 2026-06-05
+### Nâng cấp Giao diện Sáng (Light Theme Upgrade)
+- **Tối ưu hóa độ tương phản và chiều sâu thẩm mỹ:**
+  - Hoán đổi màu nền chính sang tone tím lavender mềm mại `#F0EEF8` tạo chiều sâu trực quan vượt trội so với màu cũ nhạt nhẽo.
+  - Tận dụng màu tương tác Primary tím violet đậm `#5B21B6` đáp ứng xuất sắc tiêu chuẩn WCAG về độ tương phản, chữ hiển thị rõ nét như in.
+  - Cải tiến toàn diện các hộp thoại đầu vào (`input`, `select`) phủ lớp nền trắng thuần khiết `#FFFFFF` và viền tím dịu sắc nét, giải quyết triệt để vấn đề chữ nhòe/khó đọc trong Light Theme.
+  - Tái cấu trúc hiệu ứng bóng kính (`glass-panel`) bằng lớp đổ bóng sâu (`box-shadow`) sang trọng thay vì viền thô cứng, mang lại trải nghiệm bố cục nổi ba chiều hiện đại.
+- **Loại bỏ màu tối cứng (hardcoded dark colors) trong Sidebar:**
+  - Chuyển đổi toàn bộ màu chữ, màu nền, các nút bấm tùy chỉnh và viền phân tách trong Sidebar sang sử dụng biến thiết kế CSS động (`text-brand-text`, `text-brand-text-muted`, `border-brand-border`, `bg-brand-surface-highest`, v.v.).
+  - Giúp Sidebar hiển thị đồng bộ mượt mà, sáng sủa, sắc nét và hài hòa khi chuyển đổi giao diện Sáng / Tối.
+- **Khắc phục màu tối cứng trong Cột lịch biểu (CalendarGrid):**
+  - Chuyển đổi toàn bộ màu chữ `text-[#e8dfee]`, `text-[#958da1]`, viền `border-[#4a4455]`, và hộp thoại chi tiết (selected details drawer) sang sử dụng token dải màu thương hiệu động.
+  - Thiết kế lại thẻ "LỊCH BẬN CỐ ĐỊNH" trên lưới, tăng độ tương phản rõ rệt trên nền sáng nhằm đem lại cảm giác sang trọng, trang nhã.
+  - Cải tiến nút bấm và nền dải tiêu đề ngày/tiết hài hòa đồng bộ giữa hai chế độ Sáng / Tối.
+
 ---
 
 ## [1.1.0] - 2026-06-04
