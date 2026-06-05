@@ -62,6 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [newClassDuration, setNewClassDuration] = useState(3);
   const [newClassRoom, setNewClassRoom] = useState("");
   const [newClassTeacher, setNewClassTeacher] = useState("");
+  const [newClassRegistrationDeadline, setNewClassRegistrationDeadline] = useState("");
 
   // Inline edit state for Class Options
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
@@ -71,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [editClassDuration, setEditClassDuration] = useState(3);
   const [editClassRoom, setEditClassRoom] = useState("");
   const [editClassTeacher, setEditClassTeacher] = useState("");
+  const [editClassRegistrationDeadline, setEditClassRegistrationDeadline] = useState("");
 
   const handleStartEditClass = (cls: ClassOption) => {
     setEditingClassId(cls.id);
@@ -80,6 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setEditClassDuration(cls.duration);
     setEditClassRoom(cls.room || "");
     setEditClassTeacher(cls.teacher || "");
+    setEditClassRegistrationDeadline(cls.registrationDeadline || "");
   };
 
   const handleTogglePinClass = (subjId: string, classOptId: string) => {
@@ -185,6 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       duration: newClassDuration,
       room: newClassRoom.trim() || undefined,
       teacher: newClassTeacher.trim() || undefined,
+      registrationDeadline: newClassRegistrationDeadline.trim() || undefined,
     };
 
     setSubjects(
@@ -204,6 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setNewClassName("");
     setNewClassRoom("");
     setNewClassTeacher("");
+    setNewClassRegistrationDeadline("");
   };
 
   const handleDeleteClass = (subjId: string, classOptId: string) => {
@@ -245,6 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   duration: editClassDuration,
                   room: editClassRoom.trim() || undefined,
                   teacher: editClassTeacher.trim() || undefined,
+                  registrationDeadline: editClassRegistrationDeadline.trim() || undefined,
                 };
               }
               return c;
@@ -625,6 +631,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 />
                               </div>
                             </div>
+
+                            <div className="flex flex-col gap-0.5 col-span-2">
+                              <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Hạn đăng ký (Registration Deadline) (Không bắt buộc)</span>
+                              <input
+                                value={editClassRegistrationDeadline}
+                                onChange={(e) => setEditClassRegistrationDeadline(e.target.value)}
+                                placeholder="dd - mm - yyyy"
+                                className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                              />
+                            </div>
                           </div>
 
                           <div className="flex gap-2 justify-end mt-1">
@@ -678,6 +694,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           {cls.teacher && (
                             <span className="block text-[8px] text-brand-secondary opacity-85 mt-0.5 leading-none">
                               GV: {cls.teacher}
+                            </span>
+                          )}
+                          {cls.registrationDeadline && (
+                            <span className="block text-[8px] text-brand-tertiary opacity-90 mt-0.5 leading-none">
+                              Hạn ĐK: {cls.registrationDeadline}
                             </span>
                           )}
                         </div>
@@ -804,6 +825,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee]"
                         />
                       </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5 col-span-2">
+                      <span className="text-[8px] text-brand-on-surface-variant font-bold uppercase">Hạn đăng ký (Registration Deadline) (Không bắt buộc)</span>
+                      <input
+                        value={newClassRegistrationDeadline}
+                        onChange={(e) => setNewClassRegistrationDeadline(e.target.value)}
+                        placeholder="dd - mm - yyyy"
+                        className="bg-brand-surface-highest border border-brand-border text-[10px] rounded p-1 text-brand-text dark:text-[#e8dfee] focus:outline-none focus:border-brand-primary"
+                      />
                     </div>
                   </div>
 

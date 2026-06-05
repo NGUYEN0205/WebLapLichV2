@@ -19,7 +19,33 @@ export default function App() {
 
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     const saved = localStorage.getItem("studygrid_subjects");
-    return saved ? JSON.parse(saved) : DEFAULT_PRESET.subjects;
+    let loadedSubjects = saved ? JSON.parse(saved) : DEFAULT_PRESET.subjects;
+    
+    // Auto-migration: if any class option has no registrationDeadline, populate default deadlines
+    let hasMigrated = false;
+    loadedSubjects = loadedSubjects.map((s: Subject) => {
+      const updatedClasses = s.classes.map((c: ClassOption) => {
+        if (!c.registrationDeadline) {
+          hasMigrated = true;
+          if (s.name.toLowerCase().includes("toán")) {
+            return { ...c, registrationDeadline: "15 - 06 - 2026" };
+          } else if (s.name.toLowerCase().includes("vật lý")) {
+            return { ...c, registrationDeadline: "18 - 06 - 2026" };
+          } else if (s.name.toLowerCase().includes("lập trình")) {
+            return { ...c, registrationDeadline: "20 - 06 - 2026" };
+          } else {
+            return { ...c, registrationDeadline: "25 - 06 - 2026" };
+          }
+        }
+        return c;
+      });
+      return { ...s, classes: updatedClasses };
+    });
+
+    if (hasMigrated && saved) {
+      localStorage.setItem("studygrid_subjects", JSON.stringify(loadedSubjects));
+    }
+    return loadedSubjects;
   });
 
   // Navigation Panel State

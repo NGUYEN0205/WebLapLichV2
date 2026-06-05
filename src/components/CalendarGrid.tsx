@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   ChevronLeft, ChevronRight, RotateCcw, Award, Info, 
-  MapPin, User, Clock, ShieldCheck, Sparkles, AlertTriangle
+  MapPin, User, Clock, ShieldCheck, Sparkles, AlertTriangle, Calendar
 } from "lucide-react";
 import { TimetableSolution, BusyActivity } from "../types";
 
@@ -38,6 +38,62 @@ const daysHeader = [
   { label: "CN", value: 8 },
 ];
 
+const parseDeadlineDateStr = (dateStr?: string): Date | null => {
+  if (!dateStr) return null;
+  const parts = dateStr.split("-").map(p => p.trim());
+  if (parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // 0-based month
+    const year = parseInt(parts[2], 10);
+    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+      return new Date(year, month, day, 23, 59, 59);
+    }
+  }
+  return null;
+};
+
+const getDeadlineStatusStyles = (deadlineStr?: string) => {
+  if (!deadlineStr) return null;
+  const targetDate = parseDeadlineDateStr(deadlineStr);
+  if (!targetDate) {
+    return {
+      text: `Hạn ĐK: ${deadlineStr}`,
+      className: "text-[#ffb95f] bg-[#ffb95f]/10 border-[#ffb95f]/20",
+    };
+  }
+  
+  const now = new Date();
+  const diffMs = targetDate.getTime() - now.getTime();
+  
+  if (diffMs <= 0) {
+    return {
+      text: "Đã quá hạn ĐK",
+      className: "text-red-400 bg-red-950/25 border-red-500/20 font-bold",
+    };
+  }
+  
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  
+  if (diffDays <= 5) {
+    return {
+      text: `Gấp: Còn ${Math.ceil(diffDays)} ngày ĐK`,
+      className: "text-rose-400 bg-rose-950/30 border-rose-500/30 animate-pulse font-extrabold",
+    };
+  }
+  
+  if (diffDays <= 15) {
+    return {
+      text: `Hạn ĐK: Còn ${Math.ceil(diffDays)} ngày`,
+      className: "text-amber-400 bg-amber-950/20 border-amber-500/25 font-bold",
+    };
+  }
+  
+  return {
+    text: `Hạn ĐK: ${deadlineStr}`,
+    className: "text-[#ffb95f] bg-brand-surface-medium border-[#ffb95f]/15",
+  };
+};
+
 const slotHeight = 60; // height of each period slot in pixels
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -57,6 +113,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     teacher?: string;
     color?: string;
     isBusy?: boolean;
+    registrationDeadline?: string;
   } | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -273,6 +330,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                             room: opt.room,
                             teacher: opt.teacher,
                             color: item.color,
+                            registrationDeadline: opt.registrationDeadline,
                           })}
                           className="absolute left-1 right-1 border-2 rounded-xl p-2 md:p-3 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] active:scale-95 transition-all z-10 select-none overflow-hidden hover:brightness-110 shadow-lg"
                         >
@@ -297,6 +355,16 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                                 {opt.room}
                               </span>
                             )}
+                            {opt.registrationDeadline && (() => {
+                              const badge = getDeadlineStatusStyles(opt.registrationDeadline);
+                              if (!badge) return null;
+                              return (
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded-md border flex items-center gap-1 mt-1 font-medium ${badge.className}`}>
+                                  <Calendar className="w-2.5 h-2.5 shrink-0" />
+                                  <span className="truncate">{badge.text}</span>
+                                </span>
+                              );
+                            })()}
                           </div>
                           
                           <div className="flex justify-between items-center mt-1">
@@ -421,6 +489,26 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   </div>
                 </div>
               )}
+
+              {selectedDetails.registrationDeadline && (() => {
+                const badge = getDeadlineStatusStyles(selectedDetails.registrationDeadline);
+                return (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#ffb95f] shrink-0 animate-bounce-slow" />
+                    <div>
+                      <span className="block text-[10px] text-brand-on-surface-variant uppercase">Hạn đăng ký</span>
+                      <span className="text-xs font-semibold text-brand-text flex items-center gap-1 flex-wrap">
+                        {selectedDetails.registrationDeadline}
+                        {badge && (
+                          <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold border shrink-0 ${badge.className.replace("animate-pulse", "")}`}>
+                            {badge.text.includes(":") ? badge.text.split(":")[1].trim() : badge.text}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="flex items-center gap-2 col-span-2 md:col-span-1">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />

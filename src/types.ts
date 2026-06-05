@@ -15,6 +15,7 @@ export interface ClassOption {
   room?: string; // e.g. "Phòng A.201", "Lab 4"
   teacher?: string; // e.g. "Thầy Khánh", "Cô Hà"
   isPinned?: boolean; // true if this class option is highlighted as a mandatory pin
+  registrationDeadline?: string; // dd - mm - yyyy
 }
 
 export interface PinConflictWarning {

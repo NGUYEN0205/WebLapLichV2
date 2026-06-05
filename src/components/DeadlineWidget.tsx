@@ -119,6 +119,21 @@ export const DeadlineWidget: React.FC<DeadlineWidgetProps> = ({
 
   const isCritical = countdown?.status === "critical";
 
+  const selectPreset = (sem: string, daysOffset: number) => {
+    const targetDate = new Date();
+    targetDate.setTime(targetDate.getTime() + daysOffset * 24 * 60 * 60 * 1000);
+    
+    // Format into YYYY-MM-DDTHH:MM for datetime-local input safely using local timezone
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+    const day = String(targetDate.getDate()).padStart(2, "0");
+    const hours = String(targetDate.getHours()).padStart(2, "0");
+    const minutes = String(targetDate.getMinutes()).padStart(2, "0");
+    
+    setSemesterName(sem);
+    setDeadlineDate(`${year}-${month}-${day}T${hours}:${minutes}`);
+  };
+
   // Request browser notification permission
   const checkAndRequestNotificationPermission = async () => {
     if ("Notification" in window) {
@@ -259,13 +274,54 @@ export const DeadlineWidget: React.FC<DeadlineWidgetProps> = ({
               Hạn đăng ký học phần
             </h3>
           </div>
-          <p className="text-[11px] text-brand-on-surface-variant/80">
+          <p className="text-[11px] text-brand-on-surface-variant/90 leading-normal">
             Đặt mốc thời gian đăng ký tín chỉ của trường để hiển thị đồng hồ đếm ngược và nhận thông báo nhắc nhở khi sắp đến hạn.
           </p>
 
+          {/* Quick Preset Selection Buttons */}
+          <div className="flex flex-col gap-1.5 bg-brand-surface-medium/30 p-2.5 rounded-xl border border-brand-border/40">
+            <span className="text-[9px] uppercase font-bold tracking-wider text-brand-on-surface-variant/90">
+              Chọn nhanh hạn đăng ký mẫu (Cho Test):
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => selectPreset("Học kỳ Hè (Sắp hết hạn!)", (1.5 / 24))} // 1.5 hours offset
+                className="text-[10px] font-semibold py-1.5 px-2 bg-brand-surface-high hover:bg-brand-primary hover:text-brand-on-primary border border-brand-border/60 rounded-lg text-amber-300 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-left flex items-center gap-1"
+              >
+                <span>⏳</span>
+                <span className="truncate">Chỉ còn 1.5 giờ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => selectPreset("Học kỳ 2 năm học 2025-2026", 3)} // 3 days offset
+                className="text-[10px] font-semibold py-1.5 px-2 bg-brand-surface-high hover:bg-brand-primary hover:text-brand-on-primary border border-brand-border/60 rounded-lg text-emerald-300 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-left flex items-center gap-1"
+              >
+                <span>⚡</span>
+                <span className="truncate">Sắp hết hạn: 3 ngày</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => selectPreset("Học kỳ 1 năm học 2026-2027", 15)} // 15 days offset
+                className="text-[10px] font-semibold py-1.5 px-2 bg-brand-surface-high hover:bg-brand-primary hover:text-brand-on-primary border border-brand-border/60 rounded-lg text-brand-primary cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-left flex items-center gap-1"
+              >
+                <span>🍃</span>
+                <span className="truncate">Còn xa: 15 ngày</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => selectPreset("Kỳ đăng ký bổ sung lớp CLC", -0.5)} // 12 hours in the past
+                className="text-[10px] font-semibold py-1.5 px-2 bg-brand-surface-high hover:bg-brand-primary hover:text-brand-on-primary border border-brand-border/60 rounded-lg text-red-400 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-left flex items-center gap-1"
+              >
+                <span>🔒</span>
+                <span className="truncate">Đã quá hạn</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-brand-on-surface-variant font-bold uppercase">
+              <label className="text-[10px] text-brand-on-surface-variant/90 font-bold uppercase tracking-wider">
                 Học kỳ
               </label>
               <input
@@ -279,7 +335,7 @@ export const DeadlineWidget: React.FC<DeadlineWidgetProps> = ({
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-brand-on-surface-variant font-bold uppercase">
+              <label className="text-[10px] text-brand-on-surface-variant/90 font-bold uppercase tracking-wider">
                 Thời điểm đóng cổng
               </label>
               <input

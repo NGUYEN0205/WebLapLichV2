@@ -4,6 +4,7 @@
 :root {
   --brand-bg: #15121b;
   --brand-surface: #1d1a24;
+  --brand-surface-low: #18151f;
   --brand-surface-medium: #221e28;
   --brand-surface-high: #2c2833;
   --brand-surface-highest: #37333e;
@@ -18,6 +19,7 @@
   --brand-error-container: #93000a;
   --brand-text: #e8dfee;
   --brand-text-muted: #a5a0af;
+  --brand-on-surface-variant: #a5a0af;
   --brand-border: rgba(255, 255, 255, 0.08);
   --brand-glass: rgba(30, 26, 41, 0.6);
   --brand-grid-lines: rgba(255, 255, 255, 0.04);
@@ -55,6 +57,7 @@
   
   --color-brand-bg: var(--brand-bg);
   --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-low: var(--brand-surface-low);
   --color-brand-surface-medium: var(--brand-surface-medium);
   --color-brand-surface-high: var(--brand-surface-high);
   --color-brand-surface-highest: var(--brand-surface-highest);
@@ -69,6 +72,7 @@
   --color-brand-error-container: var(--brand-error-container);
   --color-brand-text: var(--brand-text);
   --color-brand-text-muted: var(--brand-text-muted);
+  --color-brand-on-surface-variant: var(--brand-on-surface-variant);
   --color-brand-border: var(--brand-border);
   --color-brand-grid-lines: var(--brand-grid-lines);
 }
