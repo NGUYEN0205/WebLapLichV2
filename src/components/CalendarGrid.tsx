@@ -157,7 +157,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-brand-text flex items-center gap-2">
-              3. Kết quả xếp lịch biểu
+              Kết quả xếp lịch biểu
             </h1>
             <p className="text-xs text-brand-on-surface-variant">
               Tối thiểu hóa xung đột thời gian dựa trên các tham số đầu vào
