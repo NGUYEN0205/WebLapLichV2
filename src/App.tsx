@@ -409,8 +409,10 @@ export default function App() {
 
       {/* INSTRUCTIONAL SETTINGS MODAL */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-brand-surface p-6 rounded-2xl border border-brand-border max-w-lg w-full flex flex-col gap-4 relative animate-fade-in shadow-2xl select-text">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-brand-surface p-5 md:p-6 rounded-2xl border border-brand-border
+             max-w-lg w-full flex flex-col gap-4 relative animate-fade-in shadow-2xl
+             select-text my-4 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowSettingsModal(false)}
               className="absolute top-4 right-4 p-1 text-brand-on-surface-variant hover:text-brand-text rounded-lg hover:bg-white/5 transition"
@@ -418,7 +420,7 @@ export default function App() {
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-bold text-brand-primary flex items-center gap-2">
+            <h3 className="text-base md:text-lg font-bold text-brand-primary flex items-center gap-2">
               <Info className="w-5 h-5" />
               Cách hoạt động của thuật toán xếp lịch
             </h3>
@@ -440,7 +442,7 @@ export default function App() {
                 </li>
               </ol>
 
-              <div className="bg-brand-primary/5 p-3 rounded-xl border border-brand-primary/20 flex flex-col gap-1 mt-2">
+              <div className="bg-brand-primary/5 p-2.5 md:p-3 rounded-xl border border-brand-primary/20 flex flex-col gap-1 mt-2">
                 <span className="font-bold text-brand-primary">💡 Lời khuyên tối ưu lịch:</span>
                 <span>Nên thêm ít nhất 2 phương án lớp học phần (Ví dụ: Lớp 01 thứ 2 và Lớp 02 thứ 3) cho mỗi môn học để gia tăng số lượng phương án thành công tìm được!</span>
               </div>
@@ -448,7 +450,7 @@ export default function App() {
 
             <button
               onClick={() => setShowSettingsModal(false)}
-              className="mt-2 bg-brand-primary text-brand-on-primary py-2.5 rounded-xl font-bold text-xs transition duration-200 hover:brightness-105"
+              className="mt-2 bg-brand-primary text-brand-on-primary py-2 md:py-2.5 rounded-xl font-bold text-xs transition duration-200 hover:brightness-105"
             >
               Đồng ý, Đóng hướng dẫn
             </button>

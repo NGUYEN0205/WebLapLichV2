@@ -4,6 +4,31 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 
 
 
+## [1.1.6] - 2026-06-05
+### Tối ưu hóa Toàn diện Trang Xuất bản (ExportTab) & Cửa sổ Cấu hình (Settings Modal)
+- **Tinh chỉnh giao diện thẻ Xuất bản trực quan:**
+  - Áp dụng đệm biên an toàn thông minh (`p-3 md:p-6 pb-20 lg:pb-6 ios-scroll`) cho trang ExportTab, bảo toàn nội dung tuyệt đối trên các dòng điện thoại thông minh.
+  - Chuyển đổi lưới phân bổ các thẻ xuất file thành dạng thích ứng linh hoạt hơn (`md:grid-cols-2` thay vì chỉ hiển thị song song từ màn hình máy tính lớn), nâng tầm giao diện đồng bộ gọn gàng ngay trên cả máy tính bảng (iPad Portrait).
+  - Tối ưu vùng hiển thị mẫu xem trước văn bản (`textarea`) với kích cỡ chữ tùy biến linh hoạt `text-[10px] md:text-xs` kèm lớp chống tràn nội dung `.break-all`.
+- **Khắc phục triệt để khả năng cuộn trên Settings Modal:**
+  - Cho phép cuộn đứng linh hoạt (`overflow-y-auto items-start md:items-center`) bao bọc quanh cấu trúc Popup lớn nhằm bảo vệ khả năng tương tác trên các màn hình xoay ngang (Landscape Mobile) hoặc kích hoạt hướng dẫn học thuật có không gian biểu diễn hạn chế.
+  - Thiết lập chiều cao tối đa thông minh `max-h-[90vh]` kèm việc thu nhỏ nút tương tác phụ và đệm khung để vừa vặn hơn trên các thiết bị bỏ túi.
+
+---
+
+## [1.1.5] - 2026-06-05
+### Tối ưu hóa Toàn diện Trang Phân tích & Đánh giá (AnalyticsTab)
+- **Tái thiết kế lưới chỉ số KPIs (Bento Grid):**
+  - Chuyển đổi lưới chỉ số sang bố cục 2 cột mặc định cho điện thoại (`grid-cols-2 md:grid-cols-2 lg:grid-cols-4`) và áp dụng thiết lập đệm mượt, sắc nét.
+  - Tinh giản thiết kế thẻ thống kê (`p-3 md:p-4`) và tối ưu kích thước chữ số nổi bật (`text-2xl md:text-3xl`) tránh hiện tượng tràn chữ trên các thiết bị có chiều ngang hẹp.
+- **Biểu đồ phân bổ thích ứng tuyệt đối:**
+  - Bọc toàn bộ đồ thị biểu diễn theo phân đoạn ngày (`flex-col`) vào khối cuộn cảm ứng thông minh `-mx-1 overflow-x-auto` nhằm cho phép cuộn vuốt mượt mà nếu độ phân giải màn hình thấp.
+  - Đồng bộ các mã màu và thay thế các giá trị màu hex cố định sang dải token màu thương hiệu động, sáng sủa và rạng rỡ.
+- **Bố cục khung đệm trống (Empty State) cân đối:**
+  - Bo tròn bo viền của block thông báo khi chưa tính toán (`rounded-2xl md:rounded-3xl`) và giảm thể tích icon để tạo độ thông thoáng dễ chịu cho người dùng mới.
+
+---
+
 ## [1.1.4] - 2026-06-05
 ### Hỗ trợ Notch & Vùng An toàn (Safe Area) trên Thiết bị iOS
 - **Khắc phục lỗi hiển thị bị che trên iOS / Di động:**

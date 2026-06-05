@@ -18,10 +18,10 @@ export const ExportTab: React.FC<ExportTabProps> = ({
 
   if (!selectedSolution) {
     return (
-      <div className="flex-1 p-8 flex flex-col items-center justify-center text-center bg-brand-bg/95">
-        <div className="bg-brand-surface-medium border border-[#4a4455]/20 p-8 rounded-3xl max-w-md shadow-2xl flex flex-col items-center gap-4">
-          <Download className="w-16 h-16 text-brand-primary opacity-50" />
-          <h2 className="text-xl font-bold text-[#e8dfee]">Chưa có dữ liệu xuất bản</h2>
+      <div className="flex-1 p-4 md:p-8 flex flex-col items-center justify-center text-center bg-brand-bg/95">
+        <div className="bg-brand-surface-medium border border-brand-border p-6 md:p-8 rounded-2xl md:rounded-3xl max-w-sm md:max-w-md shadow-2xl flex flex-col items-center gap-4">
+          <Download className="w-12 h-12 md:w-16 md:h-16 text-brand-primary opacity-50" />
+          <h2 className="text-lg md:text-xl font-bold text-brand-text">Chưa có dữ liệu xuất bản</h2>
           <p className="text-xs text-brand-on-surface-variant leading-relaxed">
             Vui lòng nhấn nút <strong className="text-brand-primary">"Tính toán tối ưu lịch học"</strong> ở góc thanh bên trái để tạo giải pháp thời khóa biểu trước khi sử dụng các tùy chọn xuất bản và đồng bộ hóa.
           </p>
@@ -197,11 +197,11 @@ export const ExportTab: React.FC<ExportTabProps> = ({
   };
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto bg-brand-bg/95 flex flex-col gap-6 select-text">
+    <div className="flex-1 p-3 md:p-6 overflow-y-auto bg-brand-bg/95 flex flex-col gap-4 md:gap-6 select-text pb-20 lg:pb-6 ios-scroll">
       
       {/* HEADER */}
-      <div className="border-b border-[#4a4455]/20 pb-4">
-        <h1 className="text-xl md:text-2xl font-bold text-[#e8dfee] flex items-center gap-2">
+      <div className="border-b border-brand-border pb-4">
+        <h1 className="text-xl md:text-2xl font-bold text-brand-text flex items-center gap-2">
           <Download className="w-6 h-6 text-brand-primary" />
           Xuất Bản &amp; Đồng Bộ Hóa
         </h1>
@@ -209,8 +209,8 @@ export const ExportTab: React.FC<ExportTabProps> = ({
           Xuất dữ liệu thời khóa biểu đã tối ưu thành các định dạng tương thích để đồng bộ điện thoại, in ấn hoặc gửi cho bạn bè
         </p>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         
         {/* EXPORT OPTIONS CONTROLS */}
         <div className="flex flex-col gap-5">
@@ -222,24 +222,24 @@ export const ExportTab: React.FC<ExportTabProps> = ({
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#e8dfee]">Đồng bộ Google &amp; Apple Calendar</h3>
+                <h3 className="font-bold text-sm text-brand-text">Đồng bộ Google &amp; Apple Calendar</h3>
                 <p className="text-[11px] text-brand-on-surface-variant/80">Tạo tệp iCalendar phù hợp tiêu chuẩn quốc tế</p>
               </div>
             </div>
             
-            <p className="text-xs text-brand-on-surface-variant/90 leading-relaxed bg-brand-surface-low/30 p-2.5 rounded-xl border border-[#4a4455]/10">
+            <p className="text-xs text-brand-on-surface-variant/90 leading-relaxed bg-brand-surface-low/30 p-2.5 rounded-xl border border-brand-border/20">
               Nhập trực tiếp thời khóa biểu này vào các ứng dụng lịch phổ biến. Lịch sẽ được tự động lặp lại hàng tuần trong kỳ học (15 tuần liên tục).
             </p>
-
+  
             <button
               onClick={handleDownloadICS}
-              className="mt-1 bg-brand-primary text-brand-on-primary py-2.5 rounded-xl font-bold text-xs transition duration-200 hover:bg-brand-primary/95 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="mt-1 bg-brand-primary text-brand-on-primary py-3 md:py-2.5 rounded-xl font-bold text-xs transition duration-200 hover:bg-brand-primary/95 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <Download className="w-4 h-4" />
               Tải tệp đồng bộ lịch (.ICS)
             </button>
           </div>
-
+  
           {/* OPTION 2: BACKUP JSON DATAS */}
           <div className="glass-panel p-5 rounded-2xl flex flex-col gap-3">
             <div className="flex items-center gap-3">
@@ -247,24 +247,24 @@ export const ExportTab: React.FC<ExportTabProps> = ({
                 <FileCode className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#e8dfee]">Sao lưu &amp; Chia sẻ cấu hình</h3>
+                <h3 className="font-bold text-sm text-brand-text">Sao lưu &amp; Chia sẻ cấu hình</h3>
                 <p className="text-[11px] text-brand-on-surface-variant/80">Xuất file dữ liệu thô (.JSON) của phương án lịch</p>
               </div>
             </div>
-
-            <p className="text-xs text-brand-on-surface-variant/90 leading-relaxed bg-brand-surface-low/30 p-2.5 rounded-xl border border-[#4a4455]/10">
+  
+            <p className="text-xs text-brand-on-surface-variant/90 leading-relaxed bg-brand-surface-low/30 p-2.5 rounded-xl border border-brand-border/20">
               Dùng để gửi cho bạn bè trong lớp chỉ cần nạp vào StudyGrid là hiển thị ngay giống hệt, hoặc sao lưu cục bộ tránh mất mát khi trình duyệt bị xóa cookie.
             </p>
-
+  
             <button
               onClick={handleDownloadJSON}
-              className="mt-1 bg-brand-surface-high hover:bg-brand-surface-highest text-[#e8dfee] py-2.5 rounded-xl font-bold text-xs border border-[#4a4455]/40 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="mt-1 bg-brand-surface-high hover:bg-brand-surface-highest text-brand-text py-3 md:py-2.5 rounded-xl font-bold text-xs border border-brand-border/60 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <Download className="w-4 h-4" />
               Tải file Sao lưu dữ liệu (.JSON)
             </button>
           </div>
-
+  
           {/* OPTION 3: PRINT FRIENDLY */}
           <div className="glass-panel p-5 rounded-2xl flex flex-col gap-3">
             <div className="flex items-center gap-3">
@@ -272,25 +272,25 @@ export const ExportTab: React.FC<ExportTabProps> = ({
                 <Printer className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-[#e8dfee]">In ấn Thời khóa biểu</h3>
+                <h3 className="font-bold text-sm text-brand-text">In ấn Thời khóa biểu</h3>
                 <p className="text-[11px] text-brand-on-surface-variant/80">Tạo bản in thô đen trắng tiết kiệm màu</p>
               </div>
             </div>
-
+  
             <button
               onClick={handlePrint}
-              className="mt-1 bg-brand-surface-high hover:bg-brand-surface-highest text-[#e8dfee] py-2.5 rounded-xl font-bold text-xs border border-[#4a4455]/40 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="mt-1 bg-brand-surface-high hover:bg-brand-surface-highest text-brand-text py-3 md:py-2.5 rounded-xl font-bold text-xs border border-brand-border/60 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4" />
               Mở bản in của Trình duyệt
             </button>
           </div>
-
+  
         </div>
-
+  
         {/* COPYABLE SUMMARY CARD */}
         <div className="glass-panel p-5 rounded-2xl flex flex-col gap-3 h-full">
-          <div className="flex justify-between items-center bg-brand-surface-low/50 p-2.5 rounded-xl border border-[#4a4455]/10">
+          <div className="flex justify-between items-center bg-brand-surface-low/50 p-2.5 rounded-xl border border-brand-border/20">
             <span className="text-xs font-bold text-brand-primary uppercase tracking-wider">Xem trước dạng văn bản</span>
             <button
               onClick={handleCopyText}
@@ -309,11 +309,11 @@ export const ExportTab: React.FC<ExportTabProps> = ({
               )}
             </button>
           </div>
-
+  
           <textarea
             readOnly
             value={currentTextSummary}
-            className="flex-1 bg-brand-surface-low/80 border border-[#4a4455]/30 rounded-xl p-3.5 font-mono text-xs text-brand-on-surface-variant focus:outline-none min-h-[300px] h-[400px] resize-none"
+            className="flex-1 bg-brand-surface-low/80 border border-brand-border/40 rounded-xl p-3.5 font-mono text-[10px] md:text-xs text-brand-on-surface-variant focus:outline-none min-h-[300px] h-[400px] resize-none overflow-x-auto whitespace-pre-wrap break-all"
           />
           
           <div className="flex items-start gap-2 text-[10px] text-brand-on-surface-variant/80 italic mt-1 leading-relaxed bg-brand-surface-high/10 p-2 rounded-lg">
@@ -321,9 +321,9 @@ export const ExportTab: React.FC<ExportTabProps> = ({
             <span>Nội dung văn bản trên được tối ưu hóa hiển thị trên tin nhắn Messenger, Zalo hoặc Email để chia sẻ nhanh chỉ với một cú chạm sao hỏa!</span>
           </div>
         </div>
-
+  
       </div>
-
+  
     </div>
   );
 };
