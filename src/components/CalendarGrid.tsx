@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ChevronLeft, ChevronRight, RotateCcw, Award, Info, 
   MapPin, User, Clock, ShieldCheck, Sparkles, AlertTriangle
@@ -59,6 +59,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     isBusy?: boolean;
   } | null>(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+
   const activeSolution = solutions[currentSolutionIndex] || null;
 
   const handlePrev = () => {
@@ -82,7 +90,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto bg-brand-bg/95 relative flex flex-col gap-6 select-none">
+    <div className="flex-1 p-3 md:p-6 overflow-y-auto bg-brand-bg/95 relative flex flex-col gap-4 md:gap-6 select-none pb-20 lg:pb-6 content-safe-bottom ios-scroll">
       
       {/* HEADER BAR FOR RESULTS */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-brand-border pb-4">
@@ -130,7 +138,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
           <button
             onClick={onReset}
-            className="bg-brand-error-container/15 hover:bg-brand-error-container/25 text-brand-error border border-brand-error/20 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold text-xs transition-colors duration-200 cursor-pointer w-full md:w-auto justify-center active:scale-95"
+            className="bg-brand-error-container/15 hover:bg-brand-error-container/25 text-brand-error border border-brand-error/20 px-3 py-2 md:px-4 md:py-2.5 rounded-xl flex items-center gap-2 font-bold text-[11px] md:text-xs transition-colors duration-200 cursor-pointer w-full md:w-auto justify-center active:scale-95"
           >
             <RotateCcw className="w-4 h-4" />
             Reset dữ liệu sạch
@@ -157,9 +165,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       )}
 
       {/* WEEKLY TIMETABLE CONTAINER WRAPPER FOR HORIZONTAL FLOW */}
-      <div className="w-full overflow-x-auto rounded-3xl shrink-0">
+      <div className="calendar-scroll-wrapper w-full overflow-x-auto rounded-2xl md:rounded-3xl shrink-0">
         {/* WEEKLY TIMETABLE CONTAINER */}
-        <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl flex flex-col min-w-[760px]">
+        <div className="glass-panel rounded-2xl md:rounded-3xl overflow-hidden shadow-xl md:shadow-2xl flex flex-col min-w-[600px] md:min-w-[760px]">
         
         {/* DAYS HEADER CHIPS */}
         <div className="calendar-grid bg-brand-surface-medium/80 border-b border-brand-border shrink-0">
@@ -169,7 +177,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           {daysHeader.map((day) => (
             <div
               key={day.value}
-              className="flex items-center justify-center font-bold text-sm text-brand-text border-r border-brand-border/60 last:border-r-0"
+              className="flex items-center justify-center font-bold text-xs md:text-sm text-brand-text border-r border-brand-border/60 last:border-r-0"
             >
               {day.label}
             </div>
@@ -349,73 +357,83 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
       {/* FOOTER INTERACTIVE DETAILS DRAWER / POPOVER DECORATOR */}
       {selectedDetails && (
-        <div className="bg-brand-surface rounded-2xl border border-brand-border p-4 shadow-xl shadow-brand-primary/10 flex flex-col gap-3 relative animate-fade-in animate-slide-up">
-          <button 
-            onClick={() => setSelectedDetails(null)} 
-            className="absolute top-3 right-3 text-brand-on-surface-variant hover:text-brand-text p-1 rounded-lg"
-          >
-            <XIcon className="w-5 h-5" />
-          </button>
-          
-          <div className="flex items-center gap-3">
-            <span
-              style={{ backgroundColor: selectedDetails.color || "#4e4455" }}
-              className="w-3.5 h-3.5 rounded-full"
-            />
-            <h3 className="font-bold text-base text-brand-text">
-              {selectedDetails.title}
-            </h3>
-            <span className="bg-brand-surface-highest text-xs text-brand-primary px-2 py-0.5 rounded-md border border-brand-border">
-              {selectedDetails.subTitle}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1 bg-brand-surface-medium/50 p-3 rounded-xl border border-brand-border/60">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-brand-primary shrink-0" />
-              <div>
-                <span className="block text-[10px] text-brand-on-surface-variant uppercase">Thời gian</span>
-                <span className="text-xs font-semibold text-brand-text">
-                  {getDayLabel(selectedDetails.day)}: {selectedDetails.start} - {selectedDetails.end}
-                </span>
-              </div>
+        <>
+          {/* Backdrop trên mobile */}
+          <div
+            className="fixed inset-0 z-40 md:hidden bg-black/30 backdrop-blur-xs"
+            onClick={() => setSelectedDetails(null)}
+          />
+          <div className="z-50 bg-brand-surface border border-brand-border shadow-2xl flex flex-col gap-3 relative animate-fade-in fixed bottom-0 left-0 right-0 rounded-t-2xl p-5 md:absolute md:bottom-auto md:left-auto md:right-6 md:top-6 md:w-[320px] md:rounded-2xl md:p-4 pb-12 md:pb-4">
+            {/* Handle bar cho bottom sheet */}
+            <div className="w-10 h-1 bg-brand-surface-highest rounded-full mx-auto mb-1 md:hidden" />
+            
+            <button 
+              onClick={() => setSelectedDetails(null)} 
+              className="absolute top-3 right-3 text-brand-on-surface-variant hover:text-brand-text p-1 rounded-lg cursor-pointer"
+            >
+              <XIcon className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-center gap-3">
+              <span
+                style={{ backgroundColor: selectedDetails.color || "#4e4455" }}
+                className="w-3.5 h-3.5 rounded-full"
+              />
+              <h3 className="font-bold text-base text-brand-text">
+                {selectedDetails.title}
+              </h3>
+              <span className="bg-brand-surface-highest text-xs text-brand-primary px-2 py-0.5 rounded-md border border-brand-border">
+                {selectedDetails.subTitle}
+              </span>
             </div>
 
-            {selectedDetails.room && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1 bg-brand-surface-medium/50 p-3 rounded-xl border border-brand-border/60">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-brand-secondary shrink-0" />
+                <Clock className="w-4 h-4 text-brand-primary shrink-0" />
                 <div>
-                  <span className="block text-[10px] text-brand-on-surface-variant uppercase">Phòng học</span>
+                  <span className="block text-[10px] text-brand-on-surface-variant uppercase">Thời gian</span>
                   <span className="text-xs font-semibold text-brand-text">
-                    {selectedDetails.room}
+                    {getDayLabel(selectedDetails.day)}: {selectedDetails.start} - {selectedDetails.end}
                   </span>
                 </div>
               </div>
-            )}
 
-            {selectedDetails.teacher && (
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-brand-tertiary shrink-0" />
+              {selectedDetails.room && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-brand-secondary shrink-0" />
+                  <div>
+                    <span className="block text-[10px] text-brand-on-surface-variant uppercase">Phòng học</span>
+                    <span className="text-xs font-semibold text-brand-text">
+                      {selectedDetails.room}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {selectedDetails.teacher && (
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-brand-tertiary shrink-0" />
+                  <div>
+                    <span className="block text-[10px] text-brand-on-surface-variant uppercase">Giảng viên</span>
+                    <span className="text-xs font-semibold text-brand-text">
+                      {selectedDetails.teacher}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 col-span-2 md:col-span-1">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 <div>
-                  <span className="block text-[10px] text-brand-on-surface-variant uppercase">Giảng viên</span>
-                  <span className="text-xs font-semibold text-brand-text">
-                    {selectedDetails.teacher}
+                  <span className="block text-[10px] text-brand-on-surface-variant uppercase">Xác thực lịch</span>
+                  <span className="text-xs font-semibold text-emerald-400">
+                    {selectedDetails.isBusy ? "Khóa cố định" : "Khả thi 100%"}
                   </span>
                 </div>
               </div>
-            )}
-
-            <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div>
-                <span className="block text-[10px] text-brand-on-surface-variant uppercase">Xác thực lịch</span>
-                <span className="text-xs font-semibold text-emerald-400">
-                  {selectedDetails.isBusy ? "Khóa cố định" : "Khả thi 100%"}
-                </span>
-              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
     </div>

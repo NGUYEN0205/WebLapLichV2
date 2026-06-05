@@ -268,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           w-[85vw] max-w-[380px] lg:w-[380px]
           bg-brand-surface/95 backdrop-blur-xl
           border-r border-brand-border shadow-2xl
-          flex flex-col p-4 gap-6 overflow-y-auto pb-24 shrink-0
+          flex flex-col p-4 gap-6 overflow-y-auto sidebar-safe-bottom ios-scroll shrink-0
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}

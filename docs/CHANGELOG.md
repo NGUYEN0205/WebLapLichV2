@@ -4,6 +4,30 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 
 
 
+## [1.1.4] - 2026-06-05
+### Hỗ trợ Notch & Vùng An toàn (Safe Area) trên Thiết bị iOS
+- **Khắc phục lỗi hiển thị bị che trên iOS / Di động:**
+  - Chuyển đổi khung hiển thị chính sang đơn vị chiều cao dynamic viewport `h-[100dvh]` thay cho `h-screen` (`100vh`) truyền thống để ngăn thanh địa chỉ trình duyệt trên di động che mất các phần tử phía dưới trang.
+  - Tích hợp thêm thuộc tính `viewport-fit=cover` vào thẻ `<meta name="viewport">` trong `index.html` nhằm mở rộng hiển thị ra toàn bộ khung viền của iPhone thế hệ mới có tai thỏ (Notch).
+- **Thiết lập đệm lót Vùng An toàn tự động (Safe Area Insets):**
+  - Tạo các biến đệm tự động `bottom-nav-safe` để tự mở rộng thêm khoảng trống tương ứng cho thanh Bottom Navigation trên các màn hình viền mỏng (hạn chế chạm nhầm Home Indicator).
+  - Áp dụng các quy tắc an toàn `sidebar-safe-bottom` và `content-safe-bottom` cho phép các khối danh sách luôn hiển thị trọn vẹn, không bị chồng đè bởi các thanh chức năng di động.
+- **Tăng tốc độ cuộn mượt cảm ứng (`ios-scroll`):**
+  - Tích hợp tối ưu hóa gia tốc phần cứng `-webkit-overflow-scrolling: touch` cho toàn bộ các thanh cuộn của khung làm việc và Sidebar giúp thao tác lướt trang cực nhanh, nhạy bén và không có hiện tượng giật lag trên thiết bị cầm tay.
+
+---
+
+## [1.1.3] - 2026-06-05
+### Tối ưu hóa Toàn diện Lưới Lịch biểu & Trải nghiệm Cuộn Touch trên Di động
+- **Khắc phục khoảng trống và nâng cao bố cục responsive:**
+  - Tích hợp thêm khoảng giãn biên dưới thông minh (`pb-20 lg:pb-6`) trên lưới lịch biểu giúp bảo vệ nội dung không bị che khuất bởi thanh điều hướng Bottom Navigation của thiết bị di động.
+  - Chuyển đổi hộp chi tiết (`selectedDetails`) thành một hộp thoại Bottom Sheet thời thượng, thích ứng tự nhiên kết hợp thanh dải nhận diện đặc trưng phía trên và lớp phủ đen mờ sang trọng trên màn hình nhỏ, trong khi vẫn giữ nguyên bố cục bảng thông tin trôi nổi thanh thoát trên máy tính.
+- **Tối ưu trải nghiệm vuốt cuộn phần cứng:**
+  - Áp dụng kỹ thuật cuộn mượt dựa trên chuyển động gia tốc của thiết bị (`-webkit-overflow-scrolling-touch scroll-smooth` kết hợp `scroll-snap`) giúp trải nghiệm lướt ngang lưới lịch trên iOS và Android đạt độ cảm ứng mượt mà tuyệt đối.
+  - Tinh chỉnh các kích thước khung đệm màn hình trung gian (tablet và di động) với bề ngang tối thiểu tương thích (`min-w-[600px] md:min-w-[760px]`) và làm nhỏ cỡ chữ tiêu đề tiết học để tránh tràn màn hình.
+
+---
+
 ## [1.1.2] - 2026-06-05
 ### Chuyển đổi Sidebar thành Drawer trên Mobile/Tablet
 - **Thiết kế Drawer Slide-in tiện lợi:**

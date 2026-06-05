@@ -233,7 +233,7 @@ export default function App() {
   }
 
   return (
-    <div className="bg-brand-bg text-brand-text font-sans overflow-hidden h-screen flex flex-col relative select-none">
+    <div className="bg-brand-bg text-brand-text font-sans overflow-hidden h-[100dvh] flex flex-col relative select-none">
       
       {/* TOP HEADER NAVIGATION BAR */}
       <header className="bg-brand-surface/80 backdrop-blur-xl border-b border-brand-border flex justify-between items-center px-6 w-full h-16 shrink-0 z-40 select-none">
@@ -323,7 +323,7 @@ export default function App() {
         />
 
         {/* WORKSPACE AREA */}
-        <section className="flex-1 flex flex-col overflow-hidden">
+        <section className="flex-1 flex flex-col overflow-hidden ios-scroll">
           {selectedTab === "Timetable" && pinWarnings.length > 0 && (
             <div className="mx-6 mt-6 p-4 bg-red-950/45 border border-red-500/40 rounded-2xl space-y-1 shrink-0 shadow-lg relative z-20">
               <p className="text-xs md:text-sm font-bold text-red-400 flex items-center gap-2">
@@ -368,7 +368,7 @@ export default function App() {
       </main>
 
       {/* MOBILE BOTTOM NAVIGATION TRACK */}
-      <nav className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-brand-surface/90 backdrop-blur-lg border-t border-brand-border md:hidden">
+      <nav className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center bottom-nav-safe bg-brand-surface/90 backdrop-blur-lg border-t border-brand-border md:hidden">
         <button
           onClick={() => {
             setSelectedTab("Timetable");
