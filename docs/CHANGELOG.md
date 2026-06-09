@@ -2,10 +2,37 @@
 
 Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống **StudyGrid Scheduler** được ghi nhận chi tiết tại đây.
 
+## [1.2.0] - 2026-06-09
 
+### Bản Phát hành Mở rộng: Sao lưu, Chia sẻ Ảnh, Đồng bộ JSON & So sánh Song song (US-10, US-11, US-14, US-17)
+
+- **Lưu nhiều phương án nháp (US-10):**
+  - _Khôi phục và lưu trữ đa dạng cấu hình:_ Cho phép người dùng lưu trữ tối đa 5 phương án thời khóa biểu nháp khác nhau dưới dạng snapshot cục bộ trực tiếp trong trình duyệt (`localStorage`).
+  - _Quản lý danh sách trực quan:_ Bổ sung giao diện thẻ quản lý danh sách nháp chi tiết tại tab xuất bản, hiển thị trực quan thông số số môn học, thời điểm lưu, và xem nhanh danh sách môn học đính kèm (chip preview).
+  - _Duyệt tải nhanh:_ Tích hợp bộ điều hướng nhấp chọn một chạm để tải và khôi phục đồng loạt trạng thái nhập liệu trên Sidebar lẫn kết quả lưới lịch biểu.
+
+- **Chia sẻ Thời khóa biểu (US-11):**
+  - _Kết xuất ảnh thời khóa biểu sắc nét:_ Hỗ trợ tính năng chụp ảnh màn hình lịch biểu với độ phân giải gấp đôi chuẩn Full HD (Scale: 2), đính kèm watermark tinh tế "StudyGrid" ở góc dưới cùng bên phải.
+  - _Nâng cấp công nghệ tương thích Tailwind v4:_ Sử dụng thư viện nâng cấp `html2canvas-pro` để kết xuất chính xác dải màu hiện đại `oklab()` và `oklch()`, giải quyết triệt để lỗi phân tích màu sắc của các thư viện cũ.
+  - _Sao chép trực tiếp & Phương án dự phòng (Fallback):_ Cho phép sao chép nhanh ảnh PNG trực tiếp vào khay nhớ tạm (Clipboard) để dán vào Zalo/Facebook Messenger. Tự động hiển thị hộp thoại modal xem trước ảnh kèm hướng dẫn "Nhấn chuột phải -> Lưu ảnh" khi trình duyệt chặn quyền clipboard.
+
+- **Tự động nhập dữ liệu từ file JSON (US-14 REVISED):**
+  - _Module Drag & Drop trực quan:_ Thiết kế khu vực kéo thả tệp tin `.json` dạng viền đứt nét sinh động, hỗ trợ tải lên nhanh cấu hình sao lưu từ thiết bị cá nhân.
+  - _Biên dịch an toàn & Bộ lọc Schema:_ Sử dụng `FileReader` để đọc tệp an toàn (`try/catch`), giới hạn kích thước tệp < 2MB để tránh nghẽn luồng và tự động kiểm chứng cấu trúc JSON trước khi khôi phục trạng thái.
+  - _Bộ chuyển đổi phiên bản (Migration Engine):_ Xây dựng giải thuật chuyển đổi `migrateState` biến đổi dữ liệu cũ (v1) dạng phẳng chỉ chứa các lớp học sang cấu hình mới (v2) chứa cây phân cấp môn học hoàn chỉnh mà không làm mất thông tin màu sắc và metadata.
+  - _Chỉ báo trạng thái & Bảo toàn giao diện:_ Hiển thị thông báo Toast thành công màu xanh dịu tự động ẩn sau 2 giây. Đảm bảo quá trình nạp tệp không ghi đè hoặc làm gián đoạn các trạng thái UI đang mở (như popup lưu, sidebar drawer).
+
+- **So sánh phương án lịch song song - Side-by-Side (US-17):**
+  - _Giao diện chia đôi thích ứng (Split-Screen):_ Thêm nút "So sánh song song" khi hệ thống ghi nhận từ 2 bản nháp đã lưu trở lên. Cho phép đối chiếu song song hai lịch biểu khác nhau cạnh nhau trên màn hình máy tính và chuyển thành dạng tab điều hướng mượt mà trên di động.
+  - _Phát hiện khác biệt trực quan (Visual Diff Highlighting):_ Tự động phân tích và đối chiếu danh sách lớp học phần giữa hai bên. Lớp học nào chỉ xuất hiện riêng lẻ ở một phương án sẽ được tô viền vàng hổ phách nổi bật kết hợp hiệu ứng nhấp nháy động (`animate-pulse shadow-glowing`).
+  - _Bảng thống kê tóm tắt & Khôi phục nhanh:_ Hiển thị thông số tổng quát đầu mỗi cột (tổng số tiết, số ngày đi học, số ngày nghỉ trống) và bổ sung nút "Đăng ký phương án này" để khôi phục nhanh phương án được chọn làm thời khóa biểu hoạt động chính.
+
+---
 
 ## [1.1.8] - 2026-06-05
+
 ### Đồng bộ Hóa và Hoàn thiện Toàn diện Tài liệu Kỹ thuật Tích hợp (US-16 Spec & Architecture)
+
 - **Đặc tả Tài liệu Nghiệp vụ (SPEC.md):**
   - Bổ sung cấu trúc mục riêng biệt **2.4 Quản lý Deadline Đăng ký Học phần (US-16)** làm nổi bật vai trò cốt lõi và các mốc thời gian cảnh báo của tính năng lật số đếm ngược.
   - Liệt kê luồng tương tác người dùng chuẩn từng bước (Step-by-step), bao gồm form nhập liệu, kích hoạt quyền thông báo đẩy của Trình duyệt và cơ chế tự phục hồi lỗi nếu Iframe bị chặn quyền.
@@ -17,7 +44,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.7] - 2026-06-05
+
 ### Tích hợp Tính năng Nhắc nhở & Đếm ngược Hạn Đăng ký Học phần (US-16)
+
 - **Tạo Component DeadlineWidget chuyên biệt:**
   - Thiết kế widget đếm ngược trực quan với 4 thẻ Ngày-Giờ-Phút-Giây hiển thị hiệu ứng lật mượt mà (Flip mechanical style) sử dụng `motion/react`.
   - Hỗ trợ thanh tiến trình thời gian co dãn động (Progress track) đổi màu sắc thông minh theo trạng thái khẩn cấp của hạn chót (Emerald -> Yellow -> Pulsing Red -> Dark Slate).
@@ -31,7 +60,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.6] - 2026-06-05
+
 ### Tối ưu hóa Toàn diện Trang Xuất bản (ExportTab) & Cửa sổ Cấu hình (Settings Modal)
+
 - **Tinh chỉnh giao diện thẻ Xuất bản trực quan:**
   - Áp dụng đệm biên an toàn thông minh (`p-3 md:p-6 pb-20 lg:pb-6 ios-scroll`) cho trang ExportTab, bảo toàn nội dung tuyệt đối trên các dòng điện thoại thông minh.
   - Chuyển đổi lưới phân bổ các thẻ xuất file thành dạng thích ứng linh hoạt hơn (`md:grid-cols-2` thay vì chỉ hiển thị song song từ màn hình máy tính lớn), nâng tầm giao diện đồng bộ gọn gàng ngay trên cả máy tính bảng (iPad Portrait).
@@ -43,7 +74,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.5] - 2026-06-05
+
 ### Tối ưu hóa Toàn diện Trang Phân tích & Đánh giá (AnalyticsTab)
+
 - **Tái thiết kế lưới chỉ số KPIs (Bento Grid):**
   - Chuyển đổi lưới chỉ số sang bố cục 2 cột mặc định cho điện thoại (`grid-cols-2 md:grid-cols-2 lg:grid-cols-4`) và áp dụng thiết lập đệm mượt, sắc nét.
   - Tinh giản thiết kế thẻ thống kê (`p-3 md:p-4`) và tối ưu kích thước chữ số nổi bật (`text-2xl md:text-3xl`) tránh hiện tượng tràn chữ trên các thiết bị có chiều ngang hẹp.
@@ -56,7 +89,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.4] - 2026-06-05
+
 ### Hỗ trợ Notch & Vùng An toàn (Safe Area) trên Thiết bị iOS
+
 - **Khắc phục lỗi hiển thị bị che trên iOS / Di động:**
   - Chuyển đổi khung hiển thị chính sang đơn vị chiều cao dynamic viewport `h-[100dvh]` thay cho `h-screen` (`100vh`) truyền thống để ngăn thanh địa chỉ trình duyệt trên di động che mất các phần tử phía dưới trang.
   - Tích hợp thêm thuộc tính `viewport-fit=cover` vào thẻ `<meta name="viewport">` trong `index.html` nhằm mở rộng hiển thị ra toàn bộ khung viền của iPhone thế hệ mới có tai thỏ (Notch).
@@ -69,7 +104,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.3] - 2026-06-05
+
 ### Tối ưu hóa Toàn diện Lưới Lịch biểu & Trải nghiệm Cuộn Touch trên Di động
+
 - **Khắc phục khoảng trống và nâng cao bố cục responsive:**
   - Tích hợp thêm khoảng giãn biên dưới thông minh (`pb-20 lg:pb-6`) trên lưới lịch biểu giúp bảo vệ nội dung không bị che khuất bởi thanh điều hướng Bottom Navigation của thiết bị di động.
   - Chuyển đổi hộp chi tiết (`selectedDetails`) thành một hộp thoại Bottom Sheet thời thượng, thích ứng tự nhiên kết hợp thanh dải nhận diện đặc trưng phía trên và lớp phủ đen mờ sang trọng trên màn hình nhỏ, trong khi vẫn giữ nguyên bố cục bảng thông tin trôi nổi thanh thoát trên máy tính.
@@ -80,7 +117,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.2] - 2026-06-05
+
 ### Chuyển đổi Sidebar thành Drawer trên Mobile/Tablet
+
 - **Thiết kế Drawer Slide-in tiện lợi:**
   - Sidebar không còn chiếm trọn màn hình và chặn toàn bộ lịch biểu trên các thiết bị Mobile và Tablet (< 1024px). Giờ đây, Sidebar sẽ hoạt động giống như một Drawer trượt từ trái sang (`translate-x`) cực kỳ êm ái và mượt mà.
   - Tích hợp lớp phủ tối mờ (`backdrop-blur-sm bg-black/50`) cho phép nhấp vào vùng trống để tự động đóng Drawer.
@@ -90,7 +129,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
   - Cơ chế tự động đóng Drawer thông minh ngay khi người dùng chọn tab mới từ thanh điều hướng di động (Bottom Navigation) giúp tối ưu hóa không gian làm việc.
 
 ---
+
 ### Tinh chỉnh Header, Navigation & Modal Backdrop
+
 - **Cải tiến Header chính & Thanh điều hướng Bottom:**
   - Chuyển đổi màu sắc ở Header và thanh điều hướng di động sang các biến giao diện động (`bg-brand-surface/80`, `border-brand-border`, `bg-brand-surface/90`) giúp giao diện cực kỳ mượt mà, sáng sủa và thanh thoát.
   - Thiết kế lại các tab điều hướng trên máy tính với kiểu dáng bo tròn (pill style) cao cấp thay cho kiểu viền gạch dưới truyền thống, kết hợp hiệu ứng đổ bóng chủ động sắc nét và màu sắc nhấn thương hiệu dịu mát.
@@ -101,7 +142,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.1] - 2026-06-05
+
 ### Nâng cấp Giao diện Sáng (Light Theme Upgrade)
+
 - **Tối ưu hóa độ tương phản và chiều sâu thẩm mỹ:**
   - Hoán đổi màu nền chính sang tone tím lavender mềm mại `#F0EEF8` tạo chiều sâu trực quan vượt trội so với màu cũ nhạt nhẽo.
   - Tận dụng màu tương tác Primary tím violet đậm `#5B21B6` đáp ứng xuất sắc tiêu chuẩn WCAG về độ tương phản, chữ hiển thị rõ nét như in.
@@ -118,7 +161,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.1.0] - 2026-06-04
+
 ### Đã thêm/Cải tiến (Added/Improved)
+
 - **Nút chuyển đổi giao diện Sáng / Tối (Theme Toggle):**
   - Tích hợp nút chuyển đổi giao diện linh hoạt giữa chế độ sáng (Light Mode - tone nền sữa dừa thanh nhã, độ tương phản hoàn hảo) và chế độ tối (Dark Mode - Cosmic Slate đặc trưng cực dịu mắt khi sử dụng ban đêm).
   - Sử dụng biến CSS động cấp độ gốc (`:root`) kết hợp cơ chế `@theme` của Tailwind CSS v4 giúp quá trình chuyển đổi giao diện phản hồi mượt mà trong chớp mắt mà không bị giật rè hay giảm hiệu năng.
@@ -133,7 +178,9 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.0.3] - 2026-06-04
+
 ### Đã thêm/Sửa đổi (Added/Improved)
+
 - **Khu vực hiển thị danh sách bận cá nhân mới:** Di chuyển danh sách các lịch bận đã thêm lên vị trí trực quan nằm ngay bên dưới nút "Thêm lịch bận cá nhân" thuộc Form nhập liệu.
 - **Tùy biến bộ chọn tiết học thông minh:**
   - Sửa đổi các trường cấu hình thời gian ("Tiết đầu" và "Số tiết") của cả học phần bận và môn học chính thức sang dạng kết hợp **vừa có thể nhập trực tiếp bằng tay bằng số** vừa **có thể bấm chọn trực tiếp** từ danh sách thả xuống nhờ công cụ bộ nhớ dữ liệu tích hợp sẵn (`<datalist>` hỗ trợ nhập thông minh các số từ 1 đến 12).
@@ -142,14 +189,18 @@ Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống *
 ---
 
 ## [1.0.2] - 2026-06-04
+
 ### Cải tiến giao diện (UI Polish)
+
 - **Tăng cường trải nghiệm di động của Grid lịch tuần:** Bọc toàn bộ bảng thời khóa biểu trung tâm trong một khối phần tử cho phép cuộn ngang (`overflow-x-auto`) bảo đảm chiều rộng tối thiểu 760px để nội dung các hộp lớp luôn hiển thị rõ nét, không bị dính chữ trên thiết bị di động.
 - **Lưới lịch đồng đều:** Sử dụng bộ khung `calendar-grid` CSS Grid phân tách rõ ràng dải phân làn cho các cột, giúp việc nhận biết thứ và tiết tiện lợi hơn.
 
 ---
 
 ## [1.0.1] - 2026-06-03
+
 ### Khởi động Hệ thống (Initial System)
+
 - Khởi động dự án lập kế hoạch học tập sinh viên **StudyGrid Scheduler**.
 - Triển khai động cơ giải thuật toán Backtracking đệ quy tối ưu hóa lịch chồng chéo.
 - Thiết kế giao diện chủ đề Cosmic Slate đêm sâu huyền ảo cho ứng dụng.
