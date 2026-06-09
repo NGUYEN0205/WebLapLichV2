@@ -112,3 +112,27 @@ export interface NotificationMilestone {
   sent: boolean;
 }
 
+// === US-10: Lưu nhiều phương án nháp ===
+
+/**
+ * Đại diện cho một phương án thời khóa biểu đã được người dùng lưu lại.
+ * Snapshot toàn bộ trạng thái cần thiết để khôi phục lại giao diện hoàn chỉnh.
+ */
+export interface SavedPlan {
+  /** Mã định danh duy nhất cho phương án đã lưu */
+  id: string;
+  /** Tên do người dùng đặt (ví dụ: "Phương án 1 — 14:30 09/06") */
+  name: string;
+  /** Thời điểm lưu (ISO 8601 string) */
+  savedAt: string;
+  /** Snapshot danh sách môn học tại thời điểm lưu (dùng để khôi phục Sidebar) */
+  subjects: Subject[];
+  /** Snapshot lịch bận cá nhân tại thời điểm lưu */
+  busyActivities: BusyActivity[];
+  /** Snapshot phương án tối ưu tại thời điểm lưu (dùng để render CalendarGrid ngay) */
+  solution: TimetableSolution;
+  /** Số thứ tự phương án trong bộ giải (ví dụ: phương án 2/5) */
+  solutionIndex: number;
+  /** Tổng số môn học trong phương án */
+  totalSubjects: number;
+}
