@@ -7,12 +7,19 @@ import { CalendarGrid } from "./components/CalendarGrid";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { ExportTab } from "./components/ExportTab";
 import { DEFAULT_PRESET } from "./presets";
-import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset, PinConflictWarning, RegistrationDeadline } from "./types";
+import { BusyActivity, Subject, ClassOption, TimetableSolution, UniversityPreset, PinConflictWarning, RegistrationDeadline, SavedPlan } from "./types";
+
+// Hàm so sánh hai phương án thời khóa biểu xem có trùng khớp hoàn toàn hay không
+const areSolutionsEqual = (sol1: TimetableSolution, sol2: TimetableSolution): boolean => {
+  if (sol1.classes.length !== sol2.classes.length) return false;
+  const ids1 = sol1.classes.map(c => c.classOption.id).sort();
+  const ids2 = sol2.classes.map(c => c.classOption.id).sort();
+  return ids1.every((id, idx) => id === ids2[idx]);
+};
 
 export default function App() {
   // Application Data States
   const [busyActivities, setBusyActivities] = useState<BusyActivity[]>(() => {
-    // Try to load from localStorage first, else use default preset
     const saved = localStorage.getItem("studygrid_busy");
     return saved ? JSON.parse(saved) : DEFAULT_PRESET.busyActivities;
   });
@@ -21,7 +28,6 @@ export default function App() {
     const saved = localStorage.getItem("studygrid_subjects");
     let loadedSubjects = saved ? JSON.parse(saved) : DEFAULT_PRESET.subjects;
     
-    // Auto-migration: if any class option has no registrationDeadline, populate default deadlines
     let hasMigrated = false;
     loadedSubjects = loadedSubjects.map((s: Subject) => {
       const updatedClasses = s.classes.map((c: ClassOption) => {
@@ -55,6 +61,11 @@ export default function App() {
   const [solutions, setSolutions] = useState<TimetableSolution[]>([]);
   const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
 
+  // Chế độ xem lịch: "calculated" (Các phương án thuật toán tính) hoặc "saved" (Các bản nháp đã lưu)
+  const [viewMode, setViewMode] = useState<"calculated" | "saved">("calculated");
+  const [selectedSavedPlanIndex, setSelectedSavedPlanIndex] = useState(0);
+  const [pendingSolutionToMatch, setPendingSolutionToMatch] = useState<TimetableSolution | null>(null);
+
   // Settings Modal State
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -77,6 +88,17 @@ export default function App() {
       }) : null;
     } catch {
       return null;
+    }
+  });
+
+  // US-10: Saved Plans state
+  const MAX_SAVED_PLANS = 5;
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>(() => {
+    try {
+      const saved = localStorage.getItem("studygrid_saved_plans");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
   });
 
@@ -129,7 +151,65 @@ export default function App() {
     cancelExistingNotifications();
   };
 
-  // Schedule notifications on mount if there is any active registrationDeadline
+  const handleImportDeadline = (dl: RegistrationDeadline | null) => {
+    if (dl) {
+      setRegistrationDeadline(dl);
+      localStorage.setItem("studygrid_deadline", JSON.stringify(dl));
+      scheduleNotifications(dl);
+    } else {
+      setRegistrationDeadline(null);
+      localStorage.removeItem("studygrid_deadline");
+      cancelExistingNotifications();
+    }
+  };
+
+  // US-10: SavedPlan handlers
+  const handleSavePlan = (name: string) => {
+    const currentSolution = solutions[currentSolutionIndex];
+    if (!currentSolution) return;
+    const newPlan: SavedPlan = {
+      id: `plan-${Date.now()}`,
+      name,
+      savedAt: new Date().toISOString(),
+      subjects: JSON.parse(JSON.stringify(subjects)),
+      busyActivities: JSON.parse(JSON.stringify(busyActivities)),
+      solution: JSON.parse(JSON.stringify(currentSolution)),
+      solutionIndex: currentSolutionIndex,
+      totalSubjects: currentSolution.classes.length,
+    };
+    const updated = [...savedPlans, newPlan];
+    setSavedPlans(updated);
+    localStorage.setItem("studygrid_saved_plans", JSON.stringify(updated));
+    
+    // Tự động chuyển tiêu điểm đến bản nháp vừa tạo
+    setSelectedSavedPlanIndex(updated.length - 1);
+  };
+
+  const handleDeleteSavedPlan = (id: string) => {
+    const updated = savedPlans.filter((p) => p.id !== id);
+    setSavedPlans(updated);
+    localStorage.setItem("studygrid_saved_plans", JSON.stringify(updated));
+    if (selectedSavedPlanIndex >= updated.length && updated.length > 0) {
+      setSelectedSavedPlanIndex(updated.length - 1);
+    }
+  };
+
+  const handleLoadSavedPlan = (plan: SavedPlan) => {
+    const planIdx = savedPlans.findIndex((p) => p.id === plan.id);
+    if (planIdx !== -1) {
+      setSelectedSavedPlanIndex(planIdx);
+    }
+    
+    // Tải thông tin cấu hình của bản nháp lên giao diện nhập liệu
+    setSubjects(plan.subjects);
+    setBusyActivities(plan.busyActivities);
+    
+    // Đánh dấu phương án cần khớp để tránh thuật toán ghi đè khi render lại
+    setPendingSolutionToMatch(plan.solution);
+    setViewMode("saved");
+    setSelectedTab("Timetable");
+  };
+
   useEffect(() => {
     if (registrationDeadline) {
       scheduleNotifications(registrationDeadline);
@@ -139,7 +219,6 @@ export default function App() {
     };
   }, []);
 
-  // Sync theme class and attribute onto document.documentElement
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "light") {
@@ -152,7 +231,6 @@ export default function App() {
     localStorage.setItem("studygrid_theme", theme);
   }, [theme]);
 
-  // Persist local state edits instantly
   useEffect(() => {
     localStorage.setItem("studygrid_busy", JSON.stringify(busyActivities));
   }, [busyActivities]);
@@ -161,8 +239,6 @@ export default function App() {
     localStorage.setItem("studygrid_subjects", JSON.stringify(subjects));
   }, [subjects]);
 
-  // Overlap checker utility
-  // Evaluates two slots starting at S1 and S2 covering D1 and D2 durations of the same Day
   const checkOverlap = (
     day1: number,
     start1: number,
@@ -175,9 +251,8 @@ export default function App() {
     return start1 < start2 + dur2 && start2 < start1 + dur1;
   };
 
-  // Backtracking Timetable Solver Engine
-  const solveTimetable = () => {
-    // Identify subjects with classes added
+  // Thuật toán quay lui tính toán thời khóa biểu tối ưu
+  const solveTimetable = (targetSolutionToMatch?: TimetableSolution | null) => {
     const activeSubjects = subjects.filter((s) => s.classes.length > 0);
     
     if (activeSubjects.length === 0) {
@@ -188,26 +263,19 @@ export default function App() {
 
     const tempSolutions: TimetableSolution[] = [];
 
-    // Recursive search DFS finder
     const dfsSearch = (subjectIndex: number, currentClasses: any[]) => {
-      // Base case: we picked a class option for every active subject successfully
       if (subjectIndex === activeSubjects.length) {
         tempSolutions.push({ classes: [...currentClasses] });
         return;
       }
 
       const subj = activeSubjects[subjectIndex];
-
-      // ── FEATURE B: Pin constraint ──
-      // If any class option is pinned, only try that pinned option(s) for this subject
       const pinnedClasses = subj.classes.filter((c) => c.isPinned);
       const choices = pinnedClasses.length > 0 ? pinnedClasses : subj.classes;
 
-      // Outer loop through all class choices of current subject (pinned options if any, else all options)
       for (const cls of choices) {
         let isConflicting = false;
 
-        // 1. Check conflicts with previous chosen classes in this path
         for (const prev of currentClasses) {
           if (
             checkOverlap(
@@ -224,9 +292,8 @@ export default function App() {
           }
         }
 
-        if (isConflicting) continue; // Prune branch
+        if (isConflicting) continue;
 
-        // 2. Check conflicts with fixed busy activities
         let conflictsWithBusy = false;
         for (const busy of busyActivities) {
           if (
@@ -244,15 +311,12 @@ export default function App() {
           }
         }
 
-        // If it conflicts with busy activities and it is NOT pinned, we prune.
-        // If it IS pinned, we proceed (warning will be shown in UI).
         if (conflictsWithBusy && !cls.isPinned) {
           isConflicting = true;
         }
 
-        if (isConflicting) continue; // Prune branch
+        if (isConflicting) continue;
 
-        // Recurse down the search tree
         currentClasses.push({
           subjectId: subj.id,
           subjectName: subj.name,
@@ -261,8 +325,6 @@ export default function App() {
         });
 
         dfsSearch(subjectIndex + 1, currentClasses);
-
-        // Backtrack
         currentClasses.pop();
       }
     };
@@ -270,37 +332,50 @@ export default function App() {
     dfsSearch(0, []);
 
     setSolutions(tempSolutions);
+
+    // Tìm kiếm và khớp vị trí nếu đang ở chế độ xem bản nháp đã lưu
+    if (targetSolutionToMatch) {
+      const matchIdx = tempSolutions.findIndex(sol => areSolutionsEqual(sol, targetSolutionToMatch));
+      if (matchIdx !== -1) {
+        setCurrentSolutionIndex(matchIdx);
+        return;
+      }
+    }
     setCurrentSolutionIndex(0);
   };
 
-  // Re-run the timetable calculation engine automatically upon changes for frictionless usability
+  // Tự động chạy lại bộ lọc khi môn học hoặc lịch bận thay đổi
   useEffect(() => {
-    solveTimetable();
+    // Nếu người dùng thao tác trực tiếp trên sidebar (không phải tải bản nháp), đưa chế độ xem về "calculated"
+    if (!pendingSolutionToMatch) {
+      setViewMode("calculated");
+    }
+    solveTimetable(pendingSolutionToMatch);
+    setPendingSolutionToMatch(null);
   }, [subjects, busyActivities]);
 
-  // Clean wipe data helper
   const handleReset = () => {
     if (window.confirm("Bạn có chắc chắn muốn xóa tất cả lịch bận và môn học để làm mới hoàn toàn?")) {
       setBusyActivities([]);
       setSubjects([]);
       setSolutions([]);
       setCurrentSolutionIndex(0);
+      setViewMode("calculated");
     }
   };
 
-  // Preset quick load driver
   const handleLoadPreset = (preset: UniversityPreset) => {
     setBusyActivities(preset.busyActivities);
     setSubjects(preset.subjects);
-    // Solves automatically in next render loop via useEffect hooks!
+    setViewMode("calculated");
   };
 
   const forceCalculate = () => {
     solveTimetable();
+    setViewMode("calculated");
     alert("Bộ lọc đã được tính toán lại thành công!");
   };
 
-  // Derive pin warnings for the currently selected active solution
   const activeSolution = solutions[currentSolutionIndex] || null;
   const pinWarnings: PinConflictWarning[] = [];
   
@@ -335,10 +410,7 @@ export default function App() {
       
       {/* TOP HEADER NAVIGATION BAR */}
       <header className="bg-brand-surface/80 backdrop-blur-xl border-b border-brand-border flex justify-between items-center px-6 w-full h-16 shrink-0 z-40 select-none">
-        
-        {/* LOGO & DESKTOP NAVIGATION SCHEME */}
         <div className="flex items-center gap-4">
-          {/* Hamburger button — chỉ hiện trên mobile/tablet */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 rounded-xl text-brand-text-muted hover:text-brand-primary hover:bg-brand-primary/10 transition-all active:scale-95 cursor-pointer"
@@ -373,7 +445,6 @@ export default function App() {
           </nav>
         </div>
 
-        {/* CONTROLS */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setTheme(prev => prev === "light" ? "dark" : "light")}
@@ -407,8 +478,6 @@ export default function App() {
 
       {/* VIEWPORT CONTROLLER */}
       <main className="flex flex-1 overflow-hidden relative">
-        
-        {/* SIDEBAR FOR INPUTS */}
         <Sidebar
           busyActivities={busyActivities}
           setBusyActivities={setBusyActivities}
@@ -423,7 +492,6 @@ export default function App() {
           onRemoveDeadline={handleDeadlineRemove}
         />
 
-        {/* WORKSPACE AREA */}
         <section className="flex-1 flex flex-col overflow-hidden ios-scroll">
           {selectedTab === "Timetable" && pinWarnings.length > 0 && (
             <div className="mx-6 mt-6 p-4 bg-red-950/45 border border-red-500/40 rounded-2xl space-y-1 shrink-0 shadow-lg relative z-20">
@@ -448,6 +516,17 @@ export default function App() {
               setCurrentSolutionIndex={setCurrentSolutionIndex}
               busyActivities={busyActivities}
               onReset={handleReset}
+              onSavePlan={handleSavePlan}
+              savedPlansCount={savedPlans.length}
+              maxSavedPlans={MAX_SAVED_PLANS}
+              
+              // Bổ sung các Props quản lý chuyển đổi bản nháp
+              savedPlans={savedPlans}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              selectedSavedPlanIndex={selectedSavedPlanIndex}
+              setSelectedSavedPlanIndex={setSelectedSavedPlanIndex}
+              onLoadSavedPlan={handleLoadSavedPlan}
             />
           )}
 
@@ -458,14 +537,29 @@ export default function App() {
             />
           )}
 
+          
           {selectedTab === "Export" && (
             <ExportTab
               selectedSolution={solutions[currentSolutionIndex] || null}
               busyActivities={busyActivities}
+              setBusyActivities={setBusyActivities}
+              subjects={subjects}
+              setSubjects={setSubjects}
+              savedPlans={savedPlans}
+              setSavedPlans={setSavedPlans}
+              onDeleteSavedPlan={handleDeleteSavedPlan}
+              onLoadSavedPlan={handleLoadSavedPlan}
+              
+              registrationDeadline={registrationDeadline}
+              setRegistrationDeadline={handleImportDeadline} // <-- Cập nhật dòng này thành hàm an toàn mới
+              
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              theme={theme}
+              setTheme={setTheme}
             />
           )}
         </section>
-
       </main>
 
       {/* MOBILE BOTTOM NAVIGATION TRACK */}
@@ -539,13 +633,13 @@ export default function App() {
                   <strong className="text-brand-secondary">Tìm tổ hợp:</strong> Thuật toán duyệt qua tích Đề-các (Cartesian Product) chọn chính xác 1 lớp từ mỗi môn học.
                 </li>
                 <li>
-                  <strong className="text-brand-tertiary">Tránh trùng chập:</strong> Loại bỏ lập tức các nhánh có chứa lớp bị trùng giờ học với nhau, HOẶC trùng giờ với lịch cá nhân cố định (như đi làm thêm, lớp ngoại ngữ tự do).
+                  <strong className="text-brand-tertiary">Tránh trùng chập:</strong> Loại bỏ lập tức các nhánh có chứa lớp bị trùng giờ học với nhau, HOẶC trùng giờ với lịch cá nhân cố định.
                 </li>
               </ol>
 
               <div className="bg-brand-primary/5 p-2.5 md:p-3 rounded-xl border border-brand-primary/20 flex flex-col gap-1 mt-2">
                 <span className="font-bold text-brand-primary">💡 Lời khuyên tối ưu lịch:</span>
-                <span>Nên thêm ít nhất 2 phương án lớp học phần (Ví dụ: Lớp 01 thứ 2 và Lớp 02 thứ 3) cho mỗi môn học để gia tăng số lượng phương án thành công tìm được!</span>
+                <span>Nên thêm ít nhất 2 phương án lớp học phần cho mỗi môn học để gia tăng số lượng phương án thành công tìm được!</span>
               </div>
             </div>
 
@@ -558,7 +652,6 @@ export default function App() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
