@@ -2,30 +2,46 @@
 
 Tất cả các cập nhật, cải tiến và sửa đổi của hệ thống **StudyGrid Scheduler** được ghi nhận chi tiết tại đây.
 
+## [1.2.1] - 2026-06-10
+
+### Tích hợp Kéo thả Học phần Trực quan & Widget Nổi Ngoài Màn hình Máy tính (US-11, US-20)
+
+- **Kéo thả chuyển đổi học phần trực quan (US-17):**
+  - _Cơ chế tương tác một chạm:_ Thiết lập bộ kéo thả dựa trên HTML5 Native Drag-and-Drop, cho phép sinh viên nắm kéo trực tiếp thẻ lớp học phần ngay trên lưới lịch biểu.
+  - _Tự động mở Vùng Thả khả thi (Dynamic Drop Zones):_ Khi bắt đầu di chuyển một môn học, lưới lịch biểu tự động phân tích và hiển thị các ô đệm nét đứt màu xanh lá (`border-dashed border-emerald-400 bg-emerald-400/15`) tại các khoảng thời gian trống có mở lớp thay thế khả thi của môn đó.
+  - _Tự động Ghim (Pin) & Đồng bộ bộ giải:_ Thả thẻ học phần vào ô mới sẽ kích hoạt chế độ Ghim cố định phân hệ đó, ra lệnh cho bộ giải Backtracking cập nhật lại lịch học và dọn sạch các xung đột trong mili-giây.
+  - _Khắc phục lỗi hủy kéo của Trình duyệt (Drag-start Cancel Fix):_ Tích hợp bộ trì hoãn sự kiện `setTimeout(..., 10)` khi bắt đầu kéo (`onDragStart`), giúp trình duyệt khóa ảnh kéo của chuột ổn định trước khi React render lại DOM, triệt tiêu hoàn toàn hiện tượng tự hủy phiên kéo của Chromium do thay đổi layout phần tử nguồn.
+
+- **Widget nổi độc lập trên Desktop (US-18):**
+  - _Cửa sổ nổi Always-on-top thực tế:_ Sử dụng công nghệ hiện đại **Document Picture-in-Picture API** để khởi tạo một cửa sổ trình duyệt micro nổi độc lập trên màn hình Desktop máy tính, vượt ra khỏi không gian của tab web chính để ghim nổi trên mọi ứng dụng khác (Word, Excel, Discord, v.v.).
+  - _Đồng bộ React Portal & Stylesheet:_ Ứng dụng React `createPortal` để đồng bộ dữ liệu TKB thực và tự động sao chép toàn bộ tài nguyên CSS/Tailwind sang cửa sổ nổi, bảo toàn trọn vẹn giao diện Dark/Light mượt mà.
+  - _Bảng điều khiển Today's Agenda:_ Widget tự động lọc lịch học của ngày hôm nay, sắp xếp theo thời gian tăng dần, đánh dấu nổi bật bằng dải màu pulsing vàng rạng rỡ và badge `Đang học` cho các ca học đang diễn ra trong thực tế.
+  - _Nút điều phối bánh răng:_ Thiết kế nút kích hoạt bằng biểu tượng răng cưa chuyên nghiệp **`Settings` (`lucide-settings w-4 h-4`)**, tích hợp thông báo hướng dẫn kích hoạt an toàn nếu trình duyệt hoặc môi trường kết nối của người dùng chưa hỗ trợ API này.
+
+---
+
 ## [1.2.0] - 2026-06-09
 
 ### Bản Phát hành Mở rộng: Sao lưu, Chia sẻ Ảnh, Đồng bộ JSON & So sánh Song song (US-10, US-11, US-14, US-17)
 
-- **Lưu nhiều phương án nháp (US-10):**
-  - _Khôi phục và lưu trữ đa dạng cấu hình:_ Cho phép người dùng lưu trữ tối đa 5 phương án thời khóa biểu nháp khác nhau dưới dạng snapshot cục bộ trực tiếp trong trình duyệt (`localStorage`).
-  - _Quản lý danh sách trực quan:_ Bổ sung giao diện thẻ quản lý danh sách nháp chi tiết tại tab xuất bản, hiển thị trực quan thông số số môn học, thời điểm lưu, và xem nhanh danh sách môn học đính kèm (chip preview).
-  - _Duyệt tải nhanh:_ Tích hợp bộ điều hướng nhấp chọn một chạm để tải và khôi phục đồng loạt trạng thái nhập liệu trên Sidebar lẫn kết quả lưới lịch biểu.
+- **So sánh phương án lịch song song - Side-by-Side (US-12):**
+  - _Giao diện phân chia đa thiết bị (Split-Screen):_ Hỗ trợ chế độ đối chiếu hai phương án thời khóa biểu khác nhau cạnh nhau trên màn hình lớn. Trên thiết bị di động, hệ thống tự thích ứng chuyển đổi thành hai tab chuyển trang (Pill toggles) mượt mà để tránh chồng đập thông tin.
+  - _Chỉ số tóm tắt nhanh (Quick Statistics):_ Đầu mỗi cột so sánh tích hợp thanh thống kê nhanh tổng số tiết học, số ngày bận rộn và số ngày nghỉ trống hoàn toàn trong tuần để sinh viên cân đối mật độ học tập.
+  - _Visual Diff Highlighting chuyên sâu:_ Sử dụng giải thuật so khớp tập hợp `Set` để đối chiếu chéo các lớp học phần giữa hai bản nháp. Những ô lớp học nào chỉ có độc nhất ở một phương án sẽ được bọc viền vàng pulsing rực rỡ kèm đổ bóng tỏa sáng để đập vào mắt người dùng ngay lập tức.
+
+- **Lưu trữ đa dạng bản nháp cục bộ (US-10):**
+  - _Snapshot lưu trữ cứng:_ Cho phép người dùng chụp lại tối đa 5 biến thể lịch biểu ưng ý nhất xuống bộ nhớ đệm `localStorage` dưới cấu hình nén sâu.
+  - _Khôi phục nhanh:_ Giao diện tab đồng bộ hóa hiển thị danh sách nháp chi tiết với mã thời gian, số lượng môn học, xem trước danh sách môn dưới dạng chip màu thương hiệu và hỗ trợ tải ngược lên sidebar/lưới lịch trong 1 click.
+
+- **Tự động nhập dữ liệu từ file JSON (US-14):**
+  - _Module Kéo - Thả file cấu hình:_ Thiết kế vùng kéo thả tệp tin `.json` trực quan với đường viền đứt đoạn đổi màu động khi di chuột qua, cho phép sinh viên tải tệp sao lưu cấu hình chỉ với thao tác kéo thả.
+  - _Đọc file an toàn & Công cụ di trú (Migration Engine):_ Đọc tệp thông qua `FileReader` với khối kiểm lỗi `try/catch` nghiêm ngặt, tự động gọi trình di trú `migrateState` để chuyển đổi các tệp cấu hình cũ (v1) dạng phẳng lên định dạng phân cấp môn học hoàn chỉnh (v2) mà không mất mát màu sắc hay thông tin phụ.
+  - _Bảo toàn trạng thái UI:_ Thiết lập cơ chế import không can thiệp vào các biến trạng thái giao diện đang hoạt động (như sidebar drawer đang mở, các ô gõ dở dang) và hiển thị chỉ báo Toast thành công màu xanh dịu tự động biến mất sau 2 giây.
 
 - **Chia sẻ Thời khóa biểu (US-11):**
   - _Kết xuất ảnh thời khóa biểu sắc nét:_ Hỗ trợ tính năng chụp ảnh màn hình lịch biểu với độ phân giải gấp đôi chuẩn Full HD (Scale: 2), đính kèm watermark tinh tế "StudyGrid" ở góc dưới cùng bên phải.
   - _Nâng cấp công nghệ tương thích Tailwind v4:_ Sử dụng thư viện nâng cấp `html2canvas-pro` để kết xuất chính xác dải màu hiện đại `oklab()` và `oklch()`, giải quyết triệt để lỗi phân tích màu sắc của các thư viện cũ.
   - _Sao chép trực tiếp & Phương án dự phòng (Fallback):_ Cho phép sao chép nhanh ảnh PNG trực tiếp vào khay nhớ tạm (Clipboard) để dán vào Zalo/Facebook Messenger. Tự động hiển thị hộp thoại modal xem trước ảnh kèm hướng dẫn "Nhấn chuột phải -> Lưu ảnh" khi trình duyệt chặn quyền clipboard.
-
-- **Tự động nhập dữ liệu từ file JSON (US-14 REVISED):**
-  - _Module Drag & Drop trực quan:_ Thiết kế khu vực kéo thả tệp tin `.json` dạng viền đứt nét sinh động, hỗ trợ tải lên nhanh cấu hình sao lưu từ thiết bị cá nhân.
-  - _Biên dịch an toàn & Bộ lọc Schema:_ Sử dụng `FileReader` để đọc tệp an toàn (`try/catch`), giới hạn kích thước tệp < 2MB để tránh nghẽn luồng và tự động kiểm chứng cấu trúc JSON trước khi khôi phục trạng thái.
-  - _Bộ chuyển đổi phiên bản (Migration Engine):_ Xây dựng giải thuật chuyển đổi `migrateState` biến đổi dữ liệu cũ (v1) dạng phẳng chỉ chứa các lớp học sang cấu hình mới (v2) chứa cây phân cấp môn học hoàn chỉnh mà không làm mất thông tin màu sắc và metadata.
-  - _Chỉ báo trạng thái & Bảo toàn giao diện:_ Hiển thị thông báo Toast thành công màu xanh dịu tự động ẩn sau 2 giây. Đảm bảo quá trình nạp tệp không ghi đè hoặc làm gián đoạn các trạng thái UI đang mở (như popup lưu, sidebar drawer).
-
-- **So sánh phương án lịch song song - Side-by-Side (US-17):**
-  - _Giao diện chia đôi thích ứng (Split-Screen):_ Thêm nút "So sánh song song" khi hệ thống ghi nhận từ 2 bản nháp đã lưu trở lên. Cho phép đối chiếu song song hai lịch biểu khác nhau cạnh nhau trên màn hình máy tính và chuyển thành dạng tab điều hướng mượt mà trên di động.
-  - _Phát hiện khác biệt trực quan (Visual Diff Highlighting):_ Tự động phân tích và đối chiếu danh sách lớp học phần giữa hai bên. Lớp học nào chỉ xuất hiện riêng lẻ ở một phương án sẽ được tô viền vàng hổ phách nổi bật kết hợp hiệu ứng nhấp nháy động (`animate-pulse shadow-glowing`).
-  - _Bảng thống kê tóm tắt & Khôi phục nhanh:_ Hiển thị thông số tổng quát đầu mỗi cột (tổng số tiết, số ngày đi học, số ngày nghỉ trống) và bổ sung nút "Đăng ký phương án này" để khôi phục nhanh phương án được chọn làm thời khóa biểu hoạt động chính.
 
 ---
 
