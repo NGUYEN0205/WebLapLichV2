@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { 
   ChevronLeft, ChevronRight, RotateCcw, Award, Info, 
   MapPin, User, Clock, ShieldCheck, Sparkles, AlertTriangle, Calendar,
-  BookmarkPlus, Check, AlertCircle, Sliders, X
+  BookmarkPlus, Check, AlertCircle, Sliders, X, Settings
 } from "lucide-react";
-import { TimetableSolution, BusyActivity, SavedPlan } from "../types";
+import { TimetableSolution, BusyActivity, SavedPlan, Subject, ClassOption } from "../types";
+import { createPortal } from "react-dom";
 
 interface CalendarGridProps {
   solutions: TimetableSolution[];
@@ -22,6 +23,10 @@ interface CalendarGridProps {
   selectedSavedPlanIndex: number;
   setSelectedSavedPlanIndex: (idx: number) => void;
   onLoadSavedPlan: (plan: SavedPlan) => void;
+
+  // Props phục vụ kéo thả ghim sắp xếp lịch học phần trực quan
+  subjects: Subject[];
+  setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
 }
 
 const slotTimes = [
@@ -124,6 +129,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   selectedSavedPlanIndex,
   setSelectedSavedPlanIndex,
   onLoadSavedPlan,
+
+  subjects,
+  setSubjects,
 }) => {
   const [selectedDetails, setSelectedDetails] = useState<{
     title: string;
@@ -145,6 +153,18 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
+
+  // US-11 (PiP): Trạng thái quản lý cửa sổ nổi thực thụ ngoài màn hình Desktop
+  const [pipWindow, setPipWindow] = useState<Window | null>(null);
+  const [isPipSupported, setIsPipSupported] = useState(false);
+
+  useEffect(() => {
+    setIsPipSupported("documentPictureInPicture" in window);
+  }, []);
+
+  // Trạng thái lưu mã định danh môn học đang được người dùng nắm giữ và kéo đi
+  const [draggedSubjectId, setDraggedSubjectId] = useState<string | null>(null);
+  const [draggedClassId, setDraggedClassId] = useState<string | null>(null);
 
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [savePlanName, setSavePlanName] = useState("");
@@ -204,7 +224,231 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     return `Thứ ${d}`;
   };
 
-  // Tính toán chỉ số thống kê của bản nháp phục vụ US-17
+  // So khớp kiểm tra trùng lịch thông minh
+  const hasTimeOverlap = (
+    day1: number,
+    start1: number,
+    dur1: number,
+    day2: number,
+    start2: number,
+    dur2: number
+  ) => {
+    if (day1 !== day2) return false;
+    return start1 < start2 + dur2 && start2 < start1 + dur1;
+  };
+
+  // Kiểm tra xem phân hệ ca học thay thế có khả thi với lịch hiện tại hay không
+  const isReplacementSlotAvailable = (candidate: ClassOption, subjectId: string) => {
+    const hasClassConflict = activeSolution?.classes.some((item) => {
+      // Bỏ qua chính môn đang thực hiện kéo thả
+      if (item.subjectId === subjectId) return false;
+      return hasTimeOverlap(
+        candidate.day,
+        candidate.startSlot,
+        candidate.duration,
+        item.classOption.day,
+        item.classOption.startSlot,
+        item.classOption.duration
+      );
+    });
+
+    if (hasClassConflict) return false;
+
+    // Kiểm tra trùng chập với lịch bận cá nhân cố định
+    return !busyActivities.some((busy) =>
+      hasTimeOverlap(
+        candidate.day,
+        candidate.startSlot,
+        candidate.duration,
+        busy.day,
+        busy.startSlot,
+        busy.duration
+      )
+    );
+  };
+
+  // Trả về danh sách các lớp học phần thay thế KHÔNG bị trùng lịch phục vụ Drag & Drop
+  const dragReplacementTargets = useMemo(() => {
+    if (!draggedSubjectId || !draggedClassId || !activeSolution) return [];
+
+    const draggedSubject = subjects.find((s) => s.id === draggedSubjectId);
+    if (!draggedSubject) return [];
+
+    return draggedSubject.classes.filter((classOpt) =>
+      classOpt.id !== draggedClassId && isReplacementSlotAvailable(classOpt, draggedSubjectId)
+    );
+  }, [activeSolution, busyActivities, draggedClassId, draggedSubjectId, subjects]);
+
+  const replacementTargetIds = useMemo(
+    () => new Set(dragReplacementTargets.map((classOpt) => classOpt.id)),
+    [dragReplacementTargets]
+  );
+
+  const draggedClass = useMemo(() => {
+    if (!draggedSubjectId || !draggedClassId) return null;
+    return subjects
+      .find((subject) => subject.id === draggedSubjectId)
+      ?.classes.find((classOpt) => classOpt.id === draggedClassId) || null;
+  }, [draggedClassId, draggedSubjectId, subjects]);
+
+  const getDraggedSubjectIdFromEvent = (event: React.DragEvent<HTMLDivElement>) => {
+    try {
+      const payload = event.dataTransfer.getData("text/plain");
+      if (payload && payload.includes(":")) {
+        return payload.split(":")[0];
+      }
+    } catch (e) {
+      // Trình duyệt cũ chặn đọc dataTransfer trong dragover
+    }
+    return draggedSubjectId;
+  };
+
+  const resetDragState = () => {
+    setDraggedSubjectId(null);
+    setDraggedClassId(null);
+  };
+
+  const isEmptySlotAvailable = (
+    dayValue: number,
+    startSlot: number,
+    duration: number,
+    subjectId: string,
+    classOptId: string
+  ) => {
+    if (startSlot < 1 || startSlot + duration - 1 > 12) return false;
+
+    const hasClassConflict = activeSolution?.classes.some((item) => {
+      if (item.subjectId === subjectId && item.classOption.id === classOptId) return false;
+      return hasTimeOverlap(
+        dayValue,
+        startSlot,
+        duration,
+        item.classOption.day,
+        item.classOption.startSlot,
+        item.classOption.duration
+      );
+    });
+
+    if (hasClassConflict) return false;
+
+    return !busyActivities.some((busy) =>
+      hasTimeOverlap(
+        dayValue,
+        startSlot,
+        duration,
+        busy.day,
+        busy.startSlot,
+        busy.duration
+      )
+    );
+  };
+
+  const getDropStartSlot = (event: React.DragEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return Math.max(
+      1,
+      Math.min(12, Math.floor((event.clientY - rect.top) / slotHeight) + 1)
+    );
+  };
+
+  const canDropOnDayColumn = (dayValue: number, startSlot: number) => {
+    if (!draggedSubjectId || !draggedClassId || !draggedClass) return false;
+
+    const hasReplacementTarget = dragReplacementTargets.some((classOpt) =>
+      classOpt.day === dayValue &&
+      startSlot >= classOpt.startSlot &&
+      startSlot < classOpt.startSlot + classOpt.duration
+    );
+
+    if (hasReplacementTarget) return true;
+
+    return isEmptySlotAvailable(
+      dayValue,
+      startSlot,
+      draggedClass.duration,
+      draggedSubjectId,
+      draggedClassId
+    );
+  };
+
+  const handleMoveAndPinClass = (
+    subjectId: string,
+    classOptId: string,
+    dayValue: number,
+    startSlot: number
+  ) => {
+    setSubjects((prev) =>
+      prev.map((subject) => {
+        if (subject.id !== subjectId) return subject;
+
+        return {
+          ...subject,
+          classes: subject.classes.map((classOpt) => {
+            if (classOpt.id === classOptId) {
+              return {
+                ...classOpt,
+                day: dayValue,
+                startSlot,
+                isPinned: true,
+              };
+            }
+
+            return { ...classOpt, isPinned: false };
+          }),
+        };
+      })
+    );
+
+    setViewMode("calculated");
+  };
+
+  // Khôi phục ghim lớp học mới khi người dùng thả trực tiếp vào ô Drop Zone
+  const handleDropReplacement = (event: React.DragEvent<HTMLDivElement>, classOptId: string) => {
+    event.preventDefault();
+    event.stopPropagation(); // Ngăn bong bóng sự kiện lên cột chính
+
+    const subjectId = getDraggedSubjectIdFromEvent(event);
+    if (!subjectId) return;
+
+    handleSwitchAndPinClass(subjectId, classOptId);
+    resetDragState();
+    setSelectedDetails(null);
+  };
+
+  // Khôi phục ghim lớp học mới khi người dùng thả vào khoảng trống tương đối của cột ngày
+  const handleDropOnDayColumn = (event: React.DragEvent<HTMLDivElement>, dayValue: number) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const subjectId = getDraggedSubjectIdFromEvent(event);
+    if (!subjectId) return;
+
+    const droppedSlot = getDropStartSlot(event);
+
+    const target = dragReplacementTargets.find((classOpt) =>
+      classOpt.day === dayValue &&
+      droppedSlot >= classOpt.startSlot &&
+      droppedSlot < classOpt.startSlot + classOpt.duration
+    );
+
+    if (target) {
+      handleSwitchAndPinClass(subjectId, target.id);
+      resetDragState();
+      setSelectedDetails(null);
+      return;
+    }
+
+    const classOptId = draggedClassId;
+    const duration = draggedClass?.duration;
+    if (!classOptId || !duration) return;
+
+    if (!isEmptySlotAvailable(dayValue, droppedSlot, duration, subjectId, classOptId)) return;
+
+    handleMoveAndPinClass(subjectId, classOptId, dayValue, droppedSlot);
+    resetDragState();
+    setSelectedDetails(null);
+  };
+
   const getPlanStats = (plan: SavedPlan) => {
     if (!plan) return { totalPeriods: 0, activeDays: 0, freeDays: 7 };
     const classesList = plan.solution.classes;
@@ -224,6 +468,79 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   // Thu thập ID lớp học của từng phương án để so sánh khác biệt (Visual Diff Highlighting)
   const classIdsA = useMemo(() => new Set(planA?.solution.classes.map(c => c.classOption.id) || []), [planA]);
   const classIdsB = useMemo(() => new Set(planB?.solution.classes.map(c => c.classOption.id) || []), [planB]);
+
+  // Handler khởi tạo Widget nổi luôn trên cùng ngoài màn hình Desktop
+  const handleToggleWidget = async () => {
+    if (!isPipSupported) {
+      alert("Hệ thống phát hiện môi trường hoặc trình duyệt hiện tại không hỗ trợ Document Picture-in-Picture API.\n\nHướng dẫn chạy thử:\n1. Sử dụng trình duyệt Google Chrome hoặc Microsoft Edge.\n2. Chạy ứng dụng trên môi trường bảo mật (localhost hoặc HTTPS).");
+      return;
+    }
+
+    if (pipWindow) {
+      pipWindow.close();
+      setPipWindow(null);
+      return;
+    }
+
+    try {
+      const w = await (window as any).documentPictureInPicture.requestWindow({
+        width: 340,
+        height: 485,
+      });
+
+      // Sao chép các tệp CSS gốc sang cửa sổ nổi ngoài màn hình Desktop
+      [...document.styleSheets].forEach((styleSheet) => {
+        try {
+          const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join("");
+          const style = document.createElement("style");
+          style.textContent = cssRules;
+          w.document.head.appendChild(style);
+        } catch (e) {
+          const link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.type = styleSheet.ownerNode instanceof HTMLLinkElement ? styleSheet.ownerNode.type : "text/css";
+          link.href = styleSheet.href || "";
+          w.document.head.appendChild(link);
+        }
+      });
+
+      w.document.body.className = document.documentElement.classList.contains("light")
+        ? "light bg-[#F0EEF8] text-[#0F0A1E] overflow-hidden"
+        : "bg-[#15121b] text-[#e8dfee] overflow-hidden";
+      w.document.title = "StudyGrid Widget";
+
+      w.addEventListener("pagehide", () => {
+        setPipWindow(null);
+      });
+
+      setPipWindow(w);
+    } catch (err) {
+      console.error("Lỗi khi mở Floating Widget:", err);
+    }
+  };
+
+  // Hàm chuyển đổi lớp và tự động ghim (Pin) lớp học phần được kéo thả vào ô mới
+  const handleSwitchAndPinClass = (subjectId: string, classOptId: string) => {
+    setSubjects((prev) =>
+      prev.map((s) => {
+        if (s.id === subjectId) {
+          return {
+            ...s,
+            classes: s.classes.map((c) => {
+              // Ghim lớp học phần mới chọn và gỡ ghim toàn bộ các phân hệ khác của môn này
+              if (c.id === classOptId) {
+                return { ...c, isPinned: true };
+              }
+              return { ...c, isPinned: false };
+            })
+          };
+        }
+        return s;
+      })
+    );
+    // Tự động đẩy chế độ xem về Calculated để hiển thị kết quả thuật toán giải mới nhất
+    setViewMode("calculated");
+  };
 
   // Bộ kết xuất lưới lịch biểu mini phục vụ so sánh song song
   const renderCompareCalendar = (
@@ -321,7 +638,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                                 >
                                   {item.subjectName}
                                 </span>
-                                <span className="text-[8px] text-brand-text opacity-90 block truncate leading-none">
+                                <span className="text-[8px] text-brand-text opacity-95 block truncate leading-none">
                                   {opt.className}
                                 </span>
                                 {opt.room && (
@@ -761,6 +1078,20 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             </div>
           )}
 
+          {/* US-11 (PiP): NÚT KHỞI TẠO WIDGET NỔI RA NGOÀI MÀN HÌNH NỀN DESKTOP */}
+          <button
+            onClick={handleToggleWidget}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${
+              pipWindow 
+                ? "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse" 
+                : "bg-brand-primary/15 hover:bg-brand-primary/25 text-brand-primary border-brand-primary/30"
+            }`}
+            title={pipWindow ? "Đóng Widget nổi" : "Ghim Widget nổi thời gian thực ra màn hình Desktop"}
+          >
+            <Settings className="w-4 h-4" />
+            {pipWindow ? "Đóng Widget" : "Widget nổi"}
+          </button>
+
           <button
             onClick={onReset}
             className="bg-brand-error-container/15 hover:bg-brand-error-container/25 text-brand-error border border-brand-error/20 px-3 py-2 md:px-4 md:py-2.5 rounded-xl flex items-center gap-2 font-bold text-[11px] md:text-xs transition-colors duration-200 cursor-pointer w-full md:w-auto justify-center active:scale-95"
@@ -852,9 +1183,45 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     ? activeSolution.classes.filter((item) => item.classOption.day === dayValue)
                     : [];
                   const currentDayBusy = busyActivities.filter((act) => act.day === dayValue);
+                  const currentDayTargets = dragReplacementTargets.filter((classOpt) => classOpt.day === dayValue);
 
                   return (
-                    <div key={dayValue} className="relative h-full border-r border-brand-border/60 last:border-r-0">
+                    <div
+                      key={dayValue}
+                      onDragOver={(event) => {
+                        const droppedSlot = getDropStartSlot(event);
+                        if (!canDropOnDayColumn(dayValue, droppedSlot)) return;
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "move";
+                      }}
+                      onDrop={(event) => handleDropOnDayColumn(event, dayValue)}
+                      className="relative h-full border-r border-brand-border/60 last:border-r-0"
+                    >
+                      {currentDayTargets.map((target) => {
+                        const targetTop = (target.startSlot - 1) * slotHeight;
+                        const targetHeight = target.duration * slotHeight - 6;
+
+                        return (
+                          <div
+                            key={`drop-${target.id}`}
+                            style={{ top: `${targetTop + 3}px`, height: `${targetHeight}px` }}
+                            onDragOver={(event) => {
+                              event.preventDefault();
+                              event.dataTransfer.dropEffect = "move";
+                            }}
+                            onDrop={(event) => handleDropReplacement(event, target.id)}
+                            className="absolute left-1 right-1 z-30 rounded-xl border-2 border-dashed border-emerald-400 bg-emerald-400/15 shadow-[0_0_22px_rgba(52,211,153,0.45)] flex flex-col items-center justify-center gap-1 p-2 text-center animate-pulse"
+                          >
+                            <span className="text-[10px] md:text-xs font-extrabold text-emerald-300 line-clamp-1">
+                              Thả để đổi sang {target.className}
+                            </span>
+                            <span className="text-[8px] md:text-[9px] font-mono text-emerald-100/80">
+                              Tiết {target.startSlot}-{target.startSlot + target.duration - 1}
+                            </span>
+                          </div>
+                        );
+                      })}
+
                       {currentDayClasses.map((item) => {
                         const opt = item.classOption;
                         const cardTop = (opt.startSlot - 1) * slotHeight;
@@ -869,6 +1236,21 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                               backgroundColor: `${item.color.replace("1)", "0.15)")}`,
                               borderColor: item.color,
                             }}
+                            draggable
+                            onDragStart={(event) => {
+                              // Ghi dữ liệu kéo
+                              event.dataTransfer.effectAllowed = "move";
+                              event.dataTransfer.setData("text/plain", `${item.subjectId}:${opt.id}`);
+                              
+                              // Trì hoãn gán trạng thái React bằng setTimeout để trình duyệt kịp khóa (lock) ảnh kéo kéo di chuyển 
+                              // Điều này giải quyết triệt để lỗi trình duyệt tự hủy phiên kéo ngầm do thay đổi layout DOM ngay khi click chuột
+                              setTimeout(() => {
+                                setDraggedSubjectId(item.subjectId);
+                                setDraggedClassId(opt.id);
+                                setSelectedDetails(null);
+                              }, 10);
+                            }}
+                            onDragEnd={resetDragState}
                             onClick={() => setSelectedDetails({
                               title: item.subjectName,
                               subTitle: opt.className,
@@ -880,7 +1262,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                               color: item.color,
                               registrationDeadline: opt.registrationDeadline,
                             })}
-                            className="absolute left-1 right-1 border-2 rounded-xl p-2 md:p-3 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] active:scale-95 transition-all z-10 select-none overflow-hidden hover:brightness-110 shadow-lg"
+                            className="absolute left-1 right-1 border-2 rounded-xl p-2 md:p-3 flex flex-col justify-between group cursor-grab active:cursor-grabbing hover:scale-[0.98] active:scale-95 transition-all z-10 select-none overflow-hidden hover:brightness-110 shadow-lg"
                           >
                             <div className="flex flex-col gap-0.5">
                               <span className="block font-bold text-xs md:text-sm line-clamp-2" style={{ color: item.color }}>
@@ -1036,6 +1418,109 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             </div>
           </div>
         </>
+      )}
+
+      {/* ========================================================================= */}
+      {/* US-11 (PiP): CỔNG DỊCH CHUYỂN PORTAL ĐỂ DỰNG WIDGET NỔI RA NGOÀI DESKTOP     */}
+      {/* ========================================================================= */}
+      {pipWindow && createPortal(
+        (() => {
+          // Chuyển đổi ngày trong tuần của JS sang hệ 2-8 của StudyGrid (Thứ 2 đến CN)
+          const jsDay = new Date().getDay(); // 0 = Chủ Nhật, 1 = Thứ 2, ...
+          const todayValue = jsDay === 0 ? 8 : jsDay + 1;
+          const todayLabel = todayValue === 8 ? "Chủ Nhật" : `Thứ ${todayValue}`;
+
+          // Lấy các lớp của ngày hôm nay từ phương án hiện tại
+          const todayClasses = activeSolution
+            ? activeSolution.classes
+                .filter((item) => item.classOption.day === todayValue)
+                .sort((a, b) => a.classOption.startSlot - b.classOption.startSlot)
+            : [];
+
+          return (
+            <div className="p-4 flex flex-col gap-4 h-screen select-none font-sans overflow-hidden">
+              
+              {/* Tiêu đề Widget */}
+              <div className="flex justify-between items-center border-b border-brand-border/60 pb-2.5 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-brand-primary rotate-90" />
+                  <span className="text-sm font-extrabold text-brand-text">Lịch học hôm nay</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-primary/15 text-brand-primary">
+                  {todayLabel}
+                </span>
+              </div>
+
+              {/* Nội dung danh sách ca học */}
+              <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 scrollbar-none">
+                {todayClasses.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-3 h-full py-12 text-center">
+                    <span className="text-3xl">☕</span>
+                    <div>
+                      <p className="font-bold text-xs text-brand-text">Thảnh thơi!</p>
+                      <p className="text-[10px] text-brand-on-surface-variant/80 mt-1">Hôm nay bạn hoàn toàn không có lịch học.</p>
+                    </div>
+                  </div>
+                ) : (
+                  todayClasses.map((item) => {
+                    const opt = item.classOption;
+                    const startTime = slotTimes[opt.startSlot - 1]?.start || "";
+                    const endTime = slotTimes[opt.startSlot + opt.duration - 2]?.end || "";
+
+                    // Kiểm tra xem tiết học hiện tại có đang diễn ra thực tế hay không
+                    const now = new Date();
+                    const currentTimeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+                    const isHappeningNow = currentTimeStr >= startTime && currentTimeStr <= endTime;
+
+                    return (
+                      <div
+                        key={opt.id}
+                        style={{
+                          borderColor: isHappeningNow ? "#fbbf24" : item.color,
+                          backgroundColor: isHappeningNow ? "rgba(251, 191, 36, 0.08)" : "transparent"
+                        }}
+                        className={`p-3 rounded-xl border flex flex-col gap-1.5 shadow-sm transition-all ${
+                          isHappeningNow ? "animate-pulse border-2 shadow-[0_0_10px_#fbbf24]" : "bg-brand-surface-medium/55"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start gap-1">
+                          <span 
+                            className="font-bold text-xs line-clamp-2"
+                            style={{ color: isHappeningNow ? "#fbbf24" : item.color }}
+                          >
+                            {item.subjectName}
+                          </span>
+                          {isHappeningNow && (
+                            <span className="text-[8px] bg-[#fbbf24]/20 text-[#fbbf24] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                              Đang học
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-[10px] text-brand-text-muted mt-0.5">
+                          <div className="flex items-center gap-1 font-semibold text-brand-text">
+                            <span>{opt.className}</span>
+                            {opt.room && <span className="opacity-60">• Phòng: {opt.room}</span>}
+                          </div>
+                          <span className="font-mono text-[9px] bg-brand-surface-high px-1.5 py-0.5 rounded">
+                            {startTime} - {endTime}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Footer Widget */}
+              <div className="text-center pt-2 border-t border-brand-border/60 text-[9px] text-brand-on-surface-variant/80 shrink-0">
+                💡 Powered by StudyGrid
+              </div>
+
+            </div>
+          );
+        })(),
+        pipWindow.document.body
       )}
 
     </div>

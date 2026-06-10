@@ -527,6 +527,9 @@ export default function App() {
               selectedSavedPlanIndex={selectedSavedPlanIndex}
               setSelectedSavedPlanIndex={setSelectedSavedPlanIndex}
               onLoadSavedPlan={handleLoadSavedPlan}
+
+              subjects={subjects}
+              setSubjects={setSubjects}
             />
           )}
 
